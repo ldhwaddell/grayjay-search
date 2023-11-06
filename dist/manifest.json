@@ -3,8 +3,16 @@
     "manifest_version": 3,
     "name": "GrayJay Search",
     "description": "A more powerful way to search though GrayJay games",
+    "author": "ldhwaddell@gmail.com",
     "action": {
         "default_popup": "js/index.html",
         "default_title": "GrayJay Search"
+    },
+    "icons": {
+        "16": "js/icons/icon16.png",
+        "24": "js/icons/icon24.png",
+        "32": "js/icons/icon32.png",
+        "48": "js/icons/icon48.png",
+        "128": "js/icons/icon128.png"
     }
 }
