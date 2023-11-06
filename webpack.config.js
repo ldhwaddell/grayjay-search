@@ -4,7 +4,9 @@ const CopyPlugin = require("copy-webpack-plugin")
 
 module.exports = {
     entry: {
-        index: "./src/index.tsx"
+        index: "./src/index.tsx", // The popup script
+        content: "./src/content.ts" // the script that interacts with the web page
+
     },
     mode: "production",
     module: {
@@ -34,7 +36,8 @@ module.exports = {
         new CopyPlugin({
             patterns: [
                 { from: "manifest.json", to: "../manifest.json" },
-                { from: 'public/icons', to: 'icons' }
+                { from: 'public/icons', to: 'icons' },
+                { from: 'public/assets', to: 'assets' },
             ],
         }),
         ...getHtmlPlugins(["index"]),

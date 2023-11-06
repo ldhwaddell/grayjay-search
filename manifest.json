@@ -14,5 +14,18 @@
         "32": "js/icons/icon32.png",
         "48": "js/icons/icon48.png",
         "128": "js/icons/icon128.png"
-    }
+    },
+    "permissions": [
+        "activeTab"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.grayjay.ca/*/all_games=1*"
+            ],
+            "js": [
+                "js/content.js"
+            ]
+        }
+    ]
 }
