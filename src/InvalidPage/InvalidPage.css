@@ -1,0 +1,26 @@
+.invalid-message-container {
+  background-color: white;
+  border-radius: 4px;
+  padding: 5px;
+  margin: 10px;
+}
+
+.invalid-link {
+  color: rgb(44, 123, 229);
+  text-decoration: none;
+}
+
+.invalid-text {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #303030;
+  margin: 0;
+}
+
+.invalid-img {
+  display: block;
+  margin: auto;
+  max-width: 95%;
+  height: auto;
+}

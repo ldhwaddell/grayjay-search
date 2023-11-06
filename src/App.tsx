@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 
 import InvalidPage from "./InvalidPage/InvalidPage";
 
+const regex: RegExp =
+  /^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/;
+
 const App = () => {
   const [currentUrl, setCurrentUrl] = useState("");
 
@@ -14,11 +17,7 @@ const App = () => {
 
   return (
     <div>
-      {/^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/.test(currentUrl) ? (
-        <p>You are on the page!</p>
-      ) : (
-        <InvalidPage/>
-      )}
+      {regex.test(currentUrl) ? <p>You are on the page!</p> : <InvalidPage />}
     </div>
   );
 };
