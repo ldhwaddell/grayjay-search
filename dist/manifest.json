@@ -16,7 +16,9 @@
         "128": "js/icons/icon128.png"
     },
     "permissions": [
-        "activeTab"
+        "activeTab", 
+        "tabs",
+        "scripting"
     ],
     "content_scripts": [
         {
@@ -27,5 +29,9 @@
                 "js/content.js"
             ]
         }
-    ]
+    ],
+    "background": {
+        "service_worker": "js/worker.js",
+        "type": "module"
+    }
 }

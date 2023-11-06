@@ -5,7 +5,8 @@ const CopyPlugin = require("copy-webpack-plugin")
 module.exports = {
     entry: {
         index: "./src/index.tsx", // The popup script
-        content: "./src/content.ts" // the script that interacts with the web page
+        content: "./src/content.ts", // the script that interacts with the web page
+        worker: "./src/service-worker.ts" // The Script that runs when a user visits grayjay all games page
 
     },
     mode: "production",
