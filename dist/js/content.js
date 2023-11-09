@@ -1,0 +1,1 @@
+(()=>{"use strict";window.addEventListener("load",(function(){Array.from(document.querySelectorAll(".single-game")).flatMap((function(r){return Array.from(r.querySelectorAll("a[href]")).map((function(r){return r.href}))}))}))})();
