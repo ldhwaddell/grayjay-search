@@ -1,5 +1,4 @@
 import { parse } from "html-to-ast";
-//import type { MaybeDoc } from "html-to-ast";
 
 // Type Defs
 type UrlCheckResult = { isValidUrl: boolean };
@@ -98,36 +97,65 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
   return officials;
 };
 
-const fetchGameData = async (link: string): Promise<OfficialsData> => {
-  const response = await fetch(link);
-  const html: string = await response.text();
-  const ast: MaybeDoc[] = parse(html);
-  const officials: string[] = extractOfficials(ast);
+const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
+  try {
+    const response = await fetch(link);
 
-  const gameId: number = Number(link.split("/").pop());
+    if (response.status !== 200) {
+      console.error(
+        `Invalid status response code for link: ${link}. Status code: ${response.status}`
+      );
+      return null;
+    }
 
-  const data: OfficialsData = {
-    gameId: gameId,
-    referee1: officials[0],
-    referee2: officials[1],
-    linesPerson1: officials[2],
-    linesPerson2: officials[3],
-    timeKeeper1: officials[4],
-    timeKeeper2: officials[5],
-  };
+    const html: string = await response.text();
+    const ast: MaybeDoc[] = parse(html);
+    const officials: string[] = extractOfficials(ast);
+    const gameId: number = Number(link.split("/").pop());
 
-  return data;
+    const data: OfficialsData = {
+      gameId: gameId,
+      referee1: officials[0],
+      referee2: officials[1],
+      linesPerson1: officials[2],
+      linesPerson2: officials[3],
+      timeKeeper1: officials[4],
+      timeKeeper2: officials[5],
+    };
+
+    return data;
+  } catch (error) {
+    console.error(`Error fetching game data for link: ${link}`, error);
+    return null;
+  }
 };
 
-const processLinks = async (links: any) => {
+const processLinks = async (links: string[]) => {
   const chunkSize = 5;
+  const allGameData: (OfficialsData | null)[] = [];
+  const errors: string[] = [];
+
   for (let i = 0; i < links.length; i += chunkSize) {
     const chunk = links.slice(i, i + chunkSize);
-    // async scrape data for each link in the chunk
-    //wait for them all to complete
-    // add all data to arr
-    // Find way to mark any errors for retry logic
+
+    try {
+      // Fetch game data for each link in the chunk concurrently
+      const dataChunk = await Promise.all(
+        chunk.map((link) => fetchGameData(link))
+      );
+
+      // MODIFY: Save each element to chrome storage
+      allGameData.push(...dataChunk.filter((item) => item !== null));
+      // Collect links that resulted in null, signifying error
+      errors.push(...chunk.filter((_, index) => dataChunk[index] === null));
+    } catch (error) {
+      // Log the error and the chunk that caused it
+      console.error("Error with a chunk:", chunk, error);
+      errors.push(...chunk); // Assume the entire chunk failed
+    }
   }
+
+  return errors;
 };
 
 chrome.runtime.onMessage.addListener(
@@ -150,11 +178,23 @@ chrome.runtime.onMessage.addListener(
         return true;
 
       case "PROCESS_LINKS":
-        // Begin logic to parse and then save link data to storage
-        await fetchGameData(message.links[1]);
-      // Save all processed links to chrome storage
+        // const links = [
+        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
+        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43122",
+        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/sadasda",
+        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43123",
+        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42649",
+        // ];
+        if (!message.links) {
+          // Error out?
+          // Re-request a scrape
+          // Check storage for flag signifying if it is last allowed scrape
+        }
 
-      // Retry logic?
+        const errors = await processLinks(message.links);
+
+        // ADD: Retry logic for error
+        console.log(errors);
     }
   }
 );

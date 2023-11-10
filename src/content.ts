@@ -1,4 +1,5 @@
 const scrapeLinks = () => {
+  // Reset the storage last scrpae flag if called on a reload
   const gameDivs = Array.from(document.querySelectorAll(".single-game"));
 
   const links = gameDivs.flatMap((div) =>
@@ -8,6 +9,7 @@ const scrapeLinks = () => {
   );
 
   chrome.runtime.sendMessage({ type: "PROCESS_LINKS", links });
+  // Add event listenter to recall scrape links if failure
 };
 
 // Content does not update frequently
