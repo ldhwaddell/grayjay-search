@@ -1,4 +1,5 @@
 import { parse } from "html-to-ast";
+//import type { MaybeDoc } from "html-to-ast";
 
 // Type Defs
 type UrlCheckResult = { isValidUrl: boolean };
@@ -24,6 +25,30 @@ type ProcessLinksMessage = {
 // Union of all message types
 type Message = CheckValidUrlMessage | ProcessLinksMessage;
 
+type Attr = Record<string, string | boolean | number>;
+
+interface MaybeDoc {
+  type?: string;
+  text?: string;
+  content?: string;
+  voidElement?: boolean;
+  name?: string;
+  style?: string[];
+  attrs?: Attr;
+  children?: MaybeDoc[];
+  comment?: string;
+}
+
+type OfficialsData = {
+  gameId: number;
+  referee1: string;
+  referee2: string;
+  linesPerson1: string;
+  linesPerson2: string;
+  timeKeeper1: string;
+  timeKeeper2: string;
+};
+
 const regex: RegExp =
   /^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/;
 
@@ -44,63 +69,51 @@ const checkActiveTabUrl = async (): Promise<UrlCheckResult> => {
   }
 };
 
-interface ASTNode {
-  type?: string;
-  name?: string;
-  voidElement?: boolean;
-  attrs?: { [key: string]: any };
-  children?: ASTNode[];
-  content?: string;
-}
+const extractOfficials = (ast: MaybeDoc[]): string[] => {
+  const officials: string[] = [];
+  const stack: (MaybeDoc | undefined)[] = [...ast];
 
-// Flatten the AST into a single array of nodes
-function extractOfficials(
-  ast: ASTNode[],
-  officials: ASTNode[] = []
-): ASTNode[] {
-  for (const node of ast) {
+  while (stack.length > 0) {
+    const node: MaybeDoc | undefined = stack.pop();
+
+    if (!node) {
+      continue;
+    }
+
+    // If element meets conditions signifying it is official, add it
     if (
       node.type === "tag" &&
       node.name === "input" &&
-      node.attrs?.["readonly"] !== undefined
+      node.attrs?.readonly !== undefined
     ) {
-      // Push the officials name
-      officials.push(node.attrs.value);
+      officials.push(node.attrs.value as string);
     }
-    // Recurse into the children if there are any
+
+    // If node has children, shallow copy them and add to stack
     if (node.children) {
-      extractOfficials(node.children, officials); // Recursively flatten the children
+      stack.push(...node.children.slice().reverse());
     }
   }
+
   return officials;
-}
+};
 
-const fetchGameData = async (link: any) => {
-  // Can this be done faster?
+const fetchGameData = async (link: string): Promise<OfficialsData> => {
   const response = await fetch(link);
-  const html = await response.text();
+  const html: string = await response.text();
+  const ast: MaybeDoc[] = parse(html);
+  const officials: string[] = extractOfficials(ast);
 
-  const ast = parse(html);
+  const gameId: number = Number(link.split("/").pop());
 
-  const officials = extractOfficials(ast);
-
-  const [
-    referee1,
-    referee2,
-    linesPerson1,
-    linesPerson2,
-    timeKeeper1,
-    timeKeeper2,
-  ] = officials;
-
-  const data = {
-    gameId: link.split("/").at(-1),
-    referee1,
-    referee2,
-    linesPerson1,
-    linesPerson2,
-    timeKeeper1,
-    timeKeeper2,
+  const data: OfficialsData = {
+    gameId: gameId,
+    referee1: officials[0],
+    referee2: officials[1],
+    linesPerson1: officials[2],
+    linesPerson2: officials[3],
+    timeKeeper1: officials[4],
+    timeKeeper2: officials[5],
   };
 
   return data;
