@@ -55,6 +55,17 @@ const isValidUrl = (url: string | undefined): boolean => {
   return url ? regex.test(url) : false;
 };
 
+// Conditions may change in future so make them easy to update
+// Add return type so no need to check typeof in extractOffials function
+const isOfficial = (node: MaybeDoc) => {
+  return (
+    node.type === "tag" &&
+    node.name === "input" &&
+    node.attrs &&
+    node.attrs.readonly !== undefined
+  );
+};
+
 const checkActiveTabUrl = async (): Promise<UrlCheckResult> => {
   try {
     const queryOptions: QueryOptions = { active: true, currentWindow: true };
@@ -80,12 +91,13 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
     }
 
     // If element meets conditions signifying it is official, add it
-    if (
-      node.type === "tag" &&
-      node.name === "input" &&
-      node.attrs?.readonly !== undefined
-    ) {
-      officials.push(node.attrs.value as string);
+    if (isOfficial(node)) {
+      // Use optional chaining to safely access `value`
+      // and verify that it is indeed a string before pushing it to the array
+      const value = node.attrs?.value;
+      if (typeof value === "string") {
+        officials.push(value);
+      }
     }
 
     // If node has children, shallow copy them and add to stack
@@ -122,6 +134,7 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
       timeKeeper1: officials[4],
       timeKeeper2: officials[5],
     };
+    console.log(data);
 
     return data;
   } catch (error) {
@@ -178,7 +191,7 @@ chrome.runtime.onMessage.addListener(
         return true;
 
       case "PROCESS_LINKS":
-        // const links = [
+        // const badLinks = [
         //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
         //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43122",
         //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/sadasda",
