@@ -46,10 +46,11 @@ const App = () => {
 
   // Render based on the state, including a loading state if onValidPage is null
   if (onValidPage === null) {
+    // TODO: Make a loading page
     return <div>Loading...</div>;
-  } else {
-    return <div>{onValidPage ? <SearchPage /> : <InvalidPage />}</div>;
   }
+
+  return <div>{onValidPage ? <SearchPage /> : <InvalidPage />}</div>;
 };
 
 export default App;

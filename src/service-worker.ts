@@ -8,9 +8,13 @@ type QueryOptions = {
   currentWindow: boolean;
 };
 
-type Response = {
+type CheckUrlResponse = {
   isValidUrl: boolean;
 };
+
+type ProcessLinksResponse = {};
+
+type MessageResponse = CheckUrlResponse | ProcessLinksResponse;
 
 type CheckValidUrlMessage = {
   type: "CHECK_VALID_URL";
@@ -21,8 +25,15 @@ type ProcessLinksMessage = {
   links: string[];
 };
 
+type ErrorScrapingLinksMessage = {
+  type: "ERROR_SCRAPING_LINKS";
+};
+
 // Union of all message types
-type Message = CheckValidUrlMessage | ProcessLinksMessage;
+type Message =
+  | CheckValidUrlMessage
+  | ProcessLinksMessage
+  | ErrorScrapingLinksMessage;
 
 type Attr = Record<string, string | boolean | number>;
 
@@ -36,6 +47,13 @@ interface MaybeDoc {
   attrs?: Attr;
   children?: MaybeDoc[];
   comment?: string;
+}
+
+interface OfficialNode extends MaybeDoc {
+  attrs: {
+    readonly: string;
+    value: string; // Assuming value is always a string
+  };
 }
 
 type OfficialsData = {
@@ -57,12 +75,13 @@ const isValidUrl = (url: string | undefined): boolean => {
 
 // Conditions may change in future so make them easy to update
 // Add return type so no need to check typeof in extractOffials function
-const isOfficial = (node: MaybeDoc) => {
+const isOfficial = (node: MaybeDoc): node is OfficialNode => {
   return (
     node.type === "tag" &&
     node.name === "input" &&
-    node.attrs &&
-    node.attrs.readonly !== undefined
+    node.attrs != null && // Check if attrs is not null or undefined
+    node.attrs.readonly !== undefined &&
+    typeof node.attrs.value === "string" // Ensure value is a string
   );
 };
 
@@ -92,17 +111,12 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
 
     // If element meets conditions signifying it is official, add it
     if (isOfficial(node)) {
-      // Use optional chaining to safely access `value`
-      // and verify that it is indeed a string before pushing it to the array
-      const value = node.attrs?.value;
-      if (typeof value === "string") {
-        officials.push(value);
-      }
+      officials.push(node.attrs.value);
     }
 
     // If node has children, shallow copy them and add to stack
     if (node.children) {
-      stack.push(...node.children.slice().reverse());
+      stack.push(...node.children);
     }
   }
 
@@ -127,14 +141,13 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
 
     const data: OfficialsData = {
       gameId: gameId,
-      referee1: officials[0],
-      referee2: officials[1],
-      linesPerson1: officials[2],
-      linesPerson2: officials[3],
-      timeKeeper1: officials[4],
-      timeKeeper2: officials[5],
+      referee1: officials[5],
+      referee2: officials[4],
+      linesPerson1: officials[3],
+      linesPerson2: officials[2],
+      timeKeeper1: officials[1],
+      timeKeeper2: officials[0],
     };
-    console.log(data);
 
     return data;
   } catch (error) {
@@ -146,7 +159,7 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
 const processLinks = async (links: string[]) => {
   const chunkSize = 5;
   const allGameData: (OfficialsData | null)[] = [];
-  const errors: string[] = [];
+  const failedScrapes: string[] = [];
 
   for (let i = 0; i < links.length; i += chunkSize) {
     const chunk = links.slice(i, i + chunkSize);
@@ -160,56 +173,74 @@ const processLinks = async (links: string[]) => {
       // MODIFY: Save each element to chrome storage
       allGameData.push(...dataChunk.filter((item) => item !== null));
       // Collect links that resulted in null, signifying error
-      errors.push(...chunk.filter((_, index) => dataChunk[index] === null));
+      failedScrapes.push(
+        ...chunk.filter((_, index) => dataChunk[index] === null)
+      );
     } catch (error) {
       // Log the error and the chunk that caused it
       console.error("Error with a chunk:", chunk, error);
-      errors.push(...chunk); // Assume the entire chunk failed
+      failedScrapes.push(...chunk); // Assume the entire chunk failed
     }
   }
 
-  return errors;
+  return failedScrapes;
 };
 
 chrome.runtime.onMessage.addListener(
-  async (
+  (
     message: Message,
     _: chrome.runtime.MessageSender,
-    sendResponse: (response: Response) => void
+    sendResponse: (response: MessageResponse) => void
   ) => {
     switch (message.type) {
       case "CHECK_VALID_URL":
         checkActiveTabUrl()
-          .then((result: Response) => {
-            sendResponse(result);
-          })
+          .then((result: CheckUrlResponse) => sendResponse(result))
           .catch((error: Error) => {
             console.error("Error checking active tab URL: ", error);
             sendResponse({ isValidUrl: false });
           });
-        // Indicate that sendResponse will be called asynchronously
+        // This will keep the message channel open until sendResponse is called
         return true;
 
       case "PROCESS_LINKS":
-        // const badLinks = [
-        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
-        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43122",
-        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/sadasda",
-        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43123",
-        //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42649",
-        // ];
-        if (!message.links) {
-          // Error out?
-          // Re-request a scrape
-          // Check storage for flag signifying if it is last allowed scrape
+        const { links } = message;
+
+        // If there are no links, request a re-scrape
+        if (!links || !links.length) {
+          console.warn(
+            "Empty list of game links received. Requesting re-scrape"
+          );
+          sendResponse({ requestRescrape: true });
+          return;
         }
 
-        const errors = await processLinks(message.links);
+        sendResponse({ requestRescrape: false });
+        processLinks(links)
+          .then((errors) => {
+            // Process the errors, if any
+            //sendResponse({ errors });
+            console.log(errors);
+          })
+          .catch((error) => {
+            console.error("Error processing links: ", error);
+            //sendResponse({ errors: ["Failed to process links"] });
+          });
+        return true;
 
-        // ADD: Retry logic for error
-        console.log(errors);
+      case "ERROR_SCRAPING_LINKS":
+        console.error("Unable to scrape game links. Please refresh page");
+        // Add logic to make sure popup reflects this, maybe set a flag in memory
+        return true;
     }
   }
 );
 
 export {};
+
+// const badLinks = [
+//   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
+//   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43122",
+//   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/sadasda",
+//   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43123",
+// ];
