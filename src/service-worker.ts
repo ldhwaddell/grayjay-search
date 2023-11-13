@@ -134,17 +134,33 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
   return officials;
 };
 
+const fetchRetry = async (url: any, retries: number): Promise<any> => {
+  fetch(url)
+    .then(async (response) => {
+      if (response.ok) {
+        return await response.text();
+      }
+      if (retries > 0) {
+        return fetchRetry(url, retries - 1);
+      }
+      throw new Error(`${response.status}`);
+    })
+    .catch((error) => {
+      console.error(`Unable to fetch link: ${url}: ${error.message}`);
+      return null;
+    });
+};
+
 const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
   try {
-    const response = await fetch(link);
+    // put the fetch retry logic here
+    const response = await fetchRetry(link, 3);
 
-    if (response.status !== 200) {
-      console.error(
-        `Invalid status response code for link: ${link}. Status code: ${response.status}`
-      );
+    if (!response) {
       return null;
     }
 
+    // RETRY LOGIC GOES HERE
     const html: string = await response.text();
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
@@ -170,7 +186,7 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
 const scrapeLinks = async (links: string[]) => {
   const chunkSize = 5;
   const allGameData: (OfficialsData | null)[] = [];
-  const failedScrapes: string[] = [];
+  //const failedScrapes: string[] = [];
 
   for (let i = 0; i < links.length; i += chunkSize) {
     const chunk = links.slice(i, i + chunkSize);
@@ -183,13 +199,13 @@ const scrapeLinks = async (links: string[]) => {
 
       allGameData.push(...dataChunk.filter((item) => item !== null));
       // Collect links that resulted in null, signifying error
-      failedScrapes.push(
-        ...chunk.filter((_, index) => dataChunk[index] === null)
-      );
+      // failedScrapes.push(
+      //   ...chunk.filter((_, index) => dataChunk[index] === null)
+      // );
     } catch (error) {
       // Log the error and the chunk that caused it
       console.error("Error with a chunk:", chunk, error);
-      failedScrapes.push(...chunk); // Assume the entire chunk failed
+      //failedScrapes.push(...chunk); // Assume the entire chunk failed
     }
   }
 
@@ -210,7 +226,6 @@ const diffArrays = (current: any[], cached: any[]) => {
 
 const handleProcessLinks = async (sendResponse: any, message: any) => {
   const { links } = message;
-  let newGameData: (OfficialsData | null)[] = [];
 
   // If there are no links, request a re-scrape
   if (!links || !links.length) {
@@ -226,9 +241,9 @@ const handleProcessLinks = async (sendResponse: any, message: any) => {
 
   // If no links, then scrape everything
   if (!cachedGames || !cachedGames.length) {
-    // Process all links
-    newGameData = await scrapeLinks(links);
-    Cache.update(newGameData);
+    // TODO: MOVE CACHING LOGIC TO SCRAPING OF LINKS
+    // call without await so it does not block
+    scrapeLinks(links);
     return;
   }
 
@@ -236,10 +251,10 @@ const handleProcessLinks = async (sendResponse: any, message: any) => {
   const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
 
   if (newGamesToScrape && newGamesToScrape.length) {
-    newGameData = await scrapeLinks(newGamesToScrape);
+    scrapeLinks(newGamesToScrape);
   }
 
-  Cache.update(newGameData, oldGamesToRemove);
+  Cache.remove(oldGamesToRemove);
 };
 
 chrome.runtime.onMessage.addListener(
