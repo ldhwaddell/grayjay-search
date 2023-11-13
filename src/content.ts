@@ -19,9 +19,8 @@ const sendMessage = async (message: Message): Promise<Response> => {
     chrome.runtime.sendMessage(message, (response: Response | undefined) => {
       if (chrome.runtime.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
-      } else {
-        resolve(response ?? {});
       }
+      resolve(response ?? {});
     });
   });
 };
@@ -45,6 +44,7 @@ const scrapeLinks = async (attempt = 1) => {
 
       if (attempt < 3) {
         setTimeout(() => scrapeLinks(attempt + 1), 1000 * attempt);
+        return;
       } else {
         throw Error(
           "Maximum rescrape attempts reached. Please refresh the page."

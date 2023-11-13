@@ -1,4 +1,5 @@
 import { parse } from "html-to-ast";
+import { Cache } from "./Cache";
 
 // Type Defs
 type UrlCheckResult = { isValidUrl: boolean };
@@ -98,6 +99,16 @@ const checkActiveTabUrl = async (): Promise<UrlCheckResult> => {
   }
 };
 
+const handleCheckValidUrl = async (sendResponse: any) => {
+  try {
+    const isValid: CheckUrlResponse = await checkActiveTabUrl();
+    sendResponse(isValid);
+  } catch (error) {
+    console.error("Error checking active tab URL: ", error);
+    sendResponse({ isValidUrl: false });
+  }
+};
+
 const extractOfficials = (ast: MaybeDoc[]): string[] => {
   const officials: string[] = [];
   const stack: (MaybeDoc | undefined)[] = [...ast];
@@ -156,7 +167,7 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
   }
 };
 
-const processLinks = async (links: string[]) => {
+const scrapeLinks = async (links: string[]) => {
   const chunkSize = 5;
   const allGameData: (OfficialsData | null)[] = [];
   const failedScrapes: string[] = [];
@@ -170,7 +181,6 @@ const processLinks = async (links: string[]) => {
         chunk.map((link) => fetchGameData(link))
       );
 
-      // MODIFY: Save each element to chrome storage
       allGameData.push(...dataChunk.filter((item) => item !== null));
       // Collect links that resulted in null, signifying error
       failedScrapes.push(
@@ -183,7 +193,53 @@ const processLinks = async (links: string[]) => {
     }
   }
 
-  return failedScrapes;
+  // Add retry logic here
+
+  return allGameData;
+};
+
+const diffArrays = (current: any[], cached: any[]) => {
+  const currentSet = new Set(current.map((game) => game.gameId));
+  const cachedSet = new Set(cached.map((game) => game.gameId));
+
+  const newGamesToScrape = current.filter((id) => !cachedSet.has(id));
+  const oldGamesToRemove = cached.filter((id) => !currentSet.has(id));
+
+  return [newGamesToScrape, oldGamesToRemove];
+};
+
+const handleProcessLinks = async (sendResponse: any, message: any) => {
+  const { links } = message;
+  let newGameData: (OfficialsData | null)[] = [];
+
+  // If there are no links, request a re-scrape
+  if (!links || !links.length) {
+    console.warn("Empty list of game links received. Requesting re-scrape");
+    sendResponse({ requestRescrape: true });
+    return;
+  }
+
+  sendResponse({ requestRescrape: false });
+
+  // If there are links, check the cache for links
+  const cachedGames: any[] = await Cache.get();
+
+  // If no links, then scrape everything
+  if (!cachedGames || !cachedGames.length) {
+    // Process all links
+    newGameData = await scrapeLinks(links);
+    Cache.update(newGameData);
+    return;
+  }
+
+  // If there are links, diff the list received and the cache
+  const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
+
+  if (newGamesToScrape && newGamesToScrape.length) {
+    newGameData = await scrapeLinks(newGamesToScrape);
+  }
+
+  Cache.update(newGameData, oldGamesToRemove);
 };
 
 chrome.runtime.onMessage.addListener(
@@ -194,38 +250,11 @@ chrome.runtime.onMessage.addListener(
   ) => {
     switch (message.type) {
       case "CHECK_VALID_URL":
-        checkActiveTabUrl()
-          .then((result: CheckUrlResponse) => sendResponse(result))
-          .catch((error: Error) => {
-            console.error("Error checking active tab URL: ", error);
-            sendResponse({ isValidUrl: false });
-          });
-        // This will keep the message channel open until sendResponse is called
+        handleCheckValidUrl(sendResponse);
         return true;
 
       case "PROCESS_LINKS":
-        const { links } = message;
-
-        // If there are no links, request a re-scrape
-        if (!links || !links.length) {
-          console.warn(
-            "Empty list of game links received. Requesting re-scrape"
-          );
-          sendResponse({ requestRescrape: true });
-          return;
-        }
-
-        sendResponse({ requestRescrape: false });
-        processLinks(links)
-          .then((errors) => {
-            // Process the errors, if any
-            //sendResponse({ errors });
-            console.log(errors);
-          })
-          .catch((error) => {
-            console.error("Error processing links: ", error);
-            //sendResponse({ errors: ["Failed to process links"] });
-          });
+        handleProcessLinks(sendResponse, message);
         return true;
 
       case "ERROR_SCRAPING_LINKS":
@@ -235,8 +264,6 @@ chrome.runtime.onMessage.addListener(
     }
   }
 );
-
-export {};
 
 // const badLinks = [
 //   "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
