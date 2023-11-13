@@ -74,6 +74,9 @@ const isValidUrl = (url: string | undefined): boolean => {
   return url ? regex.test(url) : false;
 };
 
+// State flag
+let isProcessingLinks = false;
+
 // Conditions may change in future so make them easy to update
 // Add return type so no need to check typeof in extractOffials function
 const isOfficial = (node: MaybeDoc): node is OfficialNode => {
@@ -134,34 +137,45 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
   return officials;
 };
 
-const fetchRetry = async (url: any, retries: number): Promise<any> => {
-  fetch(url)
-    .then(async (response) => {
-      if (response.ok) {
-        return await response.text();
+// TODO: Cleanup logic
+const fetchRetry = (url: any, retries: number): any => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            const text = await response.text();
+            resolve(text);
+            return;
+          } else if (i < retries) {
+            console.warn(`Retrying: ${url}`);
+          }
+        } catch (error: any) {
+          if (i === retries) {
+            console.error(
+              `Unable to fetch link after ${retries} retries: ${url}: ${error.message}`
+            );
+            reject(error);
+            return;
+          }
+        }
       }
-      if (retries > 0) {
-        return fetchRetry(url, retries - 1);
-      }
-      throw new Error(`${response.status}`);
-    })
-    .catch((error) => {
-      console.error(`Unable to fetch link: ${url}: ${error.message}`);
-      return null;
-    });
+      reject(new Error("Max retries reached"));
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
   try {
-    // put the fetch retry logic here
     const response = await fetchRetry(link, 3);
 
     if (!response) {
       return null;
     }
-
-    // RETRY LOGIC GOES HERE
-    const html: string = await response.text();
+    const html = await response.text();
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
     const gameId: number = Number(link.split("/").pop());
@@ -186,30 +200,27 @@ const fetchGameData = async (link: string): Promise<OfficialsData | null> => {
 const scrapeLinks = async (links: string[]) => {
   const chunkSize = 5;
   const allGameData: (OfficialsData | null)[] = [];
-  //const failedScrapes: string[] = [];
 
   for (let i = 0; i < links.length; i += chunkSize) {
     const chunk = links.slice(i, i + chunkSize);
 
     try {
-      // Fetch game data for each link in the chunk concurrently
+      // Fetch game data for each link in the chunk concurrently,
+      // wait for them all to finish before progressing
       const dataChunk = await Promise.all(
         chunk.map((link) => fetchGameData(link))
       );
 
-      allGameData.push(...dataChunk.filter((item) => item !== null));
-      // Collect links that resulted in null, signifying error
-      // failedScrapes.push(
-      //   ...chunk.filter((_, index) => dataChunk[index] === null)
-      // );
+      // Add non null data chunks to cache
+      console.log(dataChunk);
+      //Cache.add(dataChunk.filter((game) => game !== null));
     } catch (error) {
       // Log the error and the chunk that caused it
       console.error("Error with a chunk:", chunk, error);
-      //failedScrapes.push(...chunk); // Assume the entire chunk failed
     }
   }
 
-  // Add retry logic here
+  isProcessingLinks = false;
 
   return allGameData;
 };
@@ -225,7 +236,23 @@ const diffArrays = (current: any[], cached: any[]) => {
 };
 
 const handleProcessLinks = async (sendResponse: any, message: any) => {
-  const { links } = message;
+  // If current scrape in process, ignore request
+  if (isProcessingLinks) {
+    console.warn(
+      "Already processing links. Ignoring new request to process links."
+    );
+    sendResponse({ requestRescrape: false });
+    return;
+  }
+
+  isProcessingLinks = true;
+  //const { links } = message;
+  const links = [
+    "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/42650",
+    "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43122",
+    "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/sadasda",
+    "https://grayjayleagues.com/47/115/173/311/0/officials/games/landing/43123",
+  ];
 
   // If there are no links, request a re-scrape
   if (!links || !links.length) {
@@ -241,20 +268,19 @@ const handleProcessLinks = async (sendResponse: any, message: any) => {
 
   // If no links, then scrape everything
   if (!cachedGames || !cachedGames.length) {
-    // TODO: MOVE CACHING LOGIC TO SCRAPING OF LINKS
     // call without await so it does not block
     scrapeLinks(links);
     return;
   }
 
   // If there are links, diff the list received and the cache
-  const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
+  // const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
 
-  if (newGamesToScrape && newGamesToScrape.length) {
-    scrapeLinks(newGamesToScrape);
-  }
+  // if (newGamesToScrape && newGamesToScrape.length) {
+  //   scrapeLinks(newGamesToScrape);
+  // }
 
-  Cache.remove(oldGamesToRemove);
+  // Cache.remove(oldGamesToRemove);
 };
 
 chrome.runtime.onMessage.addListener(
