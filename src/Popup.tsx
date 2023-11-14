@@ -12,7 +12,7 @@ type CheckValidUrlResponse = {
   isValidUrl: boolean;
 };
 
-const App = () => {
+const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
 
   // App component in the popup script
@@ -53,4 +53,4 @@ const App = () => {
   return <div>{onValidPage ? <SearchPage /> : <InvalidPage />}</div>;
 };
 
-export default App;
+export default Popup;
