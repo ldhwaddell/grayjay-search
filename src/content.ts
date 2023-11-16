@@ -8,53 +8,32 @@ type ErrorScrapingLinksMessage = {
   type: "ERROR_SCRAPING_LINKS";
 };
 
-type Message = ProcessLinksMessage | ErrorScrapingLinksMessage;
-
-type Response = {
-  requestRescrape?: boolean;
-};
-
-const sendMessage = async (message: Message): Promise<Response> => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response: Response | undefined) => {
-      if (chrome.runtime.lastError) {
-        reject(new Error(chrome.runtime.lastError.message));
-      }
-      resolve(response ?? {});
-    });
-  });
-};
-
-// The scrapeLinks function now takes an attempt parameter to track retries
-const scrapeLinks = async (attempt = 1) => {
-  const gameDivs = Array.from(document.querySelectorAll(".single-game"));
-  const links = gameDivs.flatMap((div) =>
-    Array.from(div.querySelectorAll("a[href]")).map(
-      (link) => (link as HTMLAnchorElement).href
-    )
-  );
-
+const scrapeLinks = (retries = 3, delayMs: number = 1000) => {
   try {
-    const message: Message = { type: "PROCESS_LINKS", links };
-    const response = await sendMessage(message);
+    const gameDivs = Array.from(document.querySelectorAll(".single-game"));
+    const links = gameDivs.flatMap((div) =>
+      Array.from(div.querySelectorAll("a[href]")).map(
+        (link) => (link as HTMLAnchorElement).href
+      )
+    );
 
-    // Handle the response
-    if (response.requestRescrape) {
-      console.warn(`Rescrape requested. Attempt ${attempt}`);
-
-      if (attempt < 3) {
-        setTimeout(() => scrapeLinks(attempt + 1), 1000 * attempt);
-        return;
-      } else {
-        throw Error(
-          "Maximum rescrape attempts reached. Please refresh the page."
-        );
-      }
+    if (!links || !links.length) {
+      throw new Error("Empty list of links received");
     }
+
+    const message: ProcessLinksMessage = { type: "PROCESS_LINKS", links };
+    chrome.runtime.sendMessage(message);
   } catch (error) {
-    console.error("Error scraping links:", error);
-    const message: Message = { type: "ERROR_SCRAPING_LINKS" };
-    sendMessage(message);
+    console.error(error);
+    if (retries > 1) {
+      setTimeout(() => scrapeLinks(retries - 1, delayMs), delayMs);
+    } else {
+      console.warn("Maximum retries reached for scraping links.");
+      const message: ErrorScrapingLinksMessage = {
+        type: "ERROR_SCRAPING_LINKS",
+      };
+      chrome.runtime.sendMessage(message);
+    }
   }
 };
 

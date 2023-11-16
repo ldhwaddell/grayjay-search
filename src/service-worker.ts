@@ -18,8 +18,6 @@ type MessageResponse = CheckUrlResponse | ProcessLinksResponse;
 // sendResponse function types
 type CheckUrlResponseFunction = (response: CheckUrlResponse) => void;
 
-type ProcessLinksResponseFunction = (response: ProcessLinksResponse) => void;
-
 // Message types
 type CheckValidUrlMessage = {
   type: "CHECK_VALID_URL";
@@ -215,9 +213,11 @@ const diffArrays = (
   newLinks: string[],
   cached: GameData[]
 ): [string[], number[]] => {
+  // Extract IDs from URLs
   const currentIds: Set<number> = new Set(
     newLinks.map((game) => Number(game.split("/").pop()))
   );
+  // Extract id property from game objects
   const cachedIds: Set<number> = new Set(cached.map((game) => game.id));
 
   // Return URLs to scrape
@@ -233,39 +233,32 @@ const diffArrays = (
   return [newGamesToScrape, oldGamesToRemove];
 };
 
-const handleProcessLinks = async (
-  sendResponse: ProcessLinksResponseFunction,
-  message: ProcessLinksMessage
-) => {
+const handleProcessLinks = async (message: ProcessLinksMessage) => {
   // If current scrape in process, ignore request
   if (isProcessingLinks) {
     console.warn(
       "Already processing links. Ignoring new request to process links."
     );
-    sendResponse({ requestRescrape: false });
     return;
   }
 
   isProcessingLinks = true;
   const { links } = message;
 
-  // If there are no links, request a re-scrape
-  if (!links || !links.length) {
-    console.warn("Empty list of game links received. Requesting re-scrape");
-    sendResponse({ requestRescrape: true });
-    return;
-  }
-
-  sendResponse({ requestRescrape: false });
-
   // If there are links, check the cache for links
   const cachedGames: GameData[] = await Cache.get();
+  console.log(cachedGames);
 
   // If there are links, diff the list received and the cache
   const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
 
-  scrapeLinks(newGamesToScrape);
-  Cache.remove(oldGamesToRemove);
+  try {
+    scrapeLinks(newGamesToScrape);
+    Cache.remove(oldGamesToRemove);
+  } catch (error) {
+    console.error("Error processing links. Please refresh page");
+    return;
+  }
 };
 
 chrome.runtime.onMessage.addListener(
@@ -280,13 +273,13 @@ chrome.runtime.onMessage.addListener(
         return true;
 
       case "PROCESS_LINKS":
-        handleProcessLinks(sendResponse, message);
-        return true;
+        handleProcessLinks(message);
+        break;
 
       case "ERROR_SCRAPING_LINKS":
         console.error("Unable to scrape game links. Please refresh page");
         // Add logic to make sure popup reflects this, maybe set a flag in memory
-        return true;
+        return;
     }
   }
 );
