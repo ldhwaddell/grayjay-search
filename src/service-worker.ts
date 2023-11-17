@@ -91,6 +91,7 @@ const checkActiveTabUrl = async (): Promise<UrlCheckResult> => {
       active: true,
       currentWindow: true,
     });
+    // !!tab.url converts it to boolean
     return { isValidUrl: !!tab.url && isValidUrl(tab.url) };
   } catch (error) {
     console.error("Error checking if the tab URL is valid:", error);

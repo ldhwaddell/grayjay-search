@@ -12,26 +12,23 @@ type CheckValidUrlResponse = {
   isValidUrl: boolean;
 };
 
+// Send message helper function
+const message: CheckValidUrlMessage = { type: "CHECK_VALID_URL" };
+const sendMessage = (): Promise<CheckValidUrlResponse> => {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response: CheckValidUrlResponse) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      }
+      resolve(response);
+    });
+  });
+};
+
 const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
 
-  // App component in the popup script
   useEffect(() => {
-    const message: CheckValidUrlMessage = { type: "CHECK_VALID_URL" };
-    const sendMessage = (): Promise<CheckValidUrlResponse> => {
-      return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(
-          message,
-          (response: CheckValidUrlResponse) => {
-            if (chrome.runtime.lastError) {
-              reject(chrome.runtime.lastError);
-            }
-            resolve(response ?? { isValidUrl: false });
-          }
-        );
-      });
-    };
-
     sendMessage()
       .then((response) => {
         setOnValidPage(response.isValidUrl);
