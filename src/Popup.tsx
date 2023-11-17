@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 import InvalidPage from "./InvalidPage/InvalidPage";
 import SearchPage from "./SearchPage/SearchPage";
-import LoadingPage from "./LoadingPage/LoadingPage";
 
 // Type Defs
 type CheckValidUrlMessage = {
@@ -45,14 +44,12 @@ const Popup = () => {
     // No dependencies array - this effect should not re-run
   }, []);
 
-  // Render based on the state, including a loading state if onValidPage is null
+  // If page has not yet been verified, show invalid page
   if (onValidPage === null) {
-    // TODO: Make a loading page
-    return <LoadingPage />;
+    return <InvalidPage />;
   }
 
-  // EXCHANGEED WITH LOADING FOR TESTING
-  return <div>{onValidPage ? <LoadingPage /> : <InvalidPage />}</div>;
+  return <>{onValidPage ? <SearchPage /> : <InvalidPage />}</>;
 };
 
 export default Popup;
