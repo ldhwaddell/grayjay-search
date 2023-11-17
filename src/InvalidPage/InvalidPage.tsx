@@ -5,21 +5,21 @@ const InvalidPage = () => {
   return (
     <>
       <Header />
-      <main className="invalid-main">
-        <div className="invalid-message-container">
-          <p className="invalid-text">
+      <main className="main">
+        <div className="message-container">
+          <p className="text">
             This extension only works on the GrayJay Officials Games page!{" "}
           </p>
         </div>
 
-        <div className="invalid-message-container">
-          <p className="invalid-text">
+        <div className="message-container">
+          <p className="text">
             Navigate{" "}
             <a
               href="http://www.grayjayleagues.com/officials/games"
               target="_blank"
               rel="noopener noreferrer"
-              className="invalid-link"
+              className="link"
             >
               here
             </a>{" "}
@@ -28,7 +28,7 @@ const InvalidPage = () => {
         </div>
 
         <img
-          className="invalid-img"
+          className="img"
           src="./assets/page-hint.png"
           alt="Visual example of the 'All Games' option being selected"
         />
