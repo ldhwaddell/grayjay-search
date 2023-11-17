@@ -1,5 +1,5 @@
 import "./InvalidPage.css";
-import Header from "../Header/Header";
+import Header from "../../Components/Header/Header";
 
 const InvalidPage = () => {
   return (

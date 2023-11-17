@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-import InvalidPage from "./InvalidPage/InvalidPage";
-import SearchPage from "./SearchPage/SearchPage";
+import InvalidPage from "./Pages/InvalidPage/InvalidPage";
+import SearchPage from "./Pages/SearchPage/SearchPage";
 
 // Type Defs
 type CheckValidUrlMessage = {
@@ -46,7 +46,7 @@ const Popup = () => {
     return <InvalidPage />;
   }
 
-  return <>{onValidPage ? <SearchPage /> : <InvalidPage />}</>;
+  return <>{onValidPage ? <SearchPage /> : <SearchPage />}</>;
 };
 
 export default Popup;
