@@ -52,7 +52,7 @@ const Popup = () => {
   }
 
   // EXCHANGEED WITH LOADING FOR TESTING
-  return <div>{onValidPage ? <SearchPage /> : <LoadingPage />}</div>;
+  return <div>{onValidPage ? <LoadingPage /> : <InvalidPage />}</div>;
 };
 
 export default Popup;
