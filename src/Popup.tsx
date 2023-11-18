@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import InvalidPage from "./Pages/InvalidPage/InvalidPage";
 import SearchPage from "./Pages/SearchPage/SearchPage";
 
+import { Cache } from "./Cache";
+
 // Type Defs
 type CheckValidUrlMessage = {
   type: string;
@@ -11,6 +13,17 @@ type CheckValidUrlMessage = {
 type CheckValidUrlResponse = {
   isValidUrl: boolean;
 };
+
+interface GameData {
+  url: string;
+  id: number;
+  referee1: string;
+  referee2: string;
+  linesPerson1: string;
+  linesPerson2: string;
+  timeKeeper1: string;
+  timeKeeper2: string;
+}
 
 // Send message helper function
 const message: CheckValidUrlMessage = { type: "CHECK_VALID_URL" };
@@ -27,18 +40,25 @@ const sendMessage = (): Promise<CheckValidUrlResponse> => {
 
 const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
+  const [gameData, setGameData] = useState<GameData[]>([]);
 
   useEffect(() => {
-    sendMessage()
-      .then((response) => {
+    const checkValidUrl = async () => {
+      try {
+        const response = await sendMessage();
+        if (response.isValidUrl) {
+          const data: GameData[] = await Cache.get();
+          setGameData(data);
+        }
+
         setOnValidPage(response.isValidUrl);
-      })
-      .catch((error: Error) => {
+      } catch (error) {
         console.error("Error:", JSON.stringify(error));
         setOnValidPage(false);
-      });
+      }
+    };
 
-    // No dependencies array - this effect should not re-run
+    checkValidUrl();
   }, []);
 
   // If page has not yet been verified, show invalid page
@@ -46,7 +66,7 @@ const Popup = () => {
     return <InvalidPage />;
   }
 
-  return <>{onValidPage ? <SearchPage /> : <SearchPage />}</>;
+  return <>{onValidPage ? <SearchPage data={gameData} /> : <InvalidPage />}</>;
 };
 
 export default Popup;

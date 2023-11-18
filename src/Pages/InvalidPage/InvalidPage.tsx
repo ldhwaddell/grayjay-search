@@ -27,7 +27,7 @@ const InvalidPage = () => {
       </div>
 
       <img
-        className="img"
+        className="invalid-img"
         src="./assets/page-hint.png"
         alt="Visual example of the 'All Games' option being selected"
       />

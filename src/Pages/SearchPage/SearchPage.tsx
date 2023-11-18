@@ -2,10 +2,26 @@ import { useState } from "react";
 
 import Header from "../../Components/Header/Header";
 import RadioButton from "../../Components/RadioButton/RadioButton";
+import SearchBar from "../../Components/SearchBar/SearchBar";
 
 import "./SearchPage.css";
 
-const SearchPage = () => {
+interface GameData {
+  url: string;
+  id: number;
+  referee1: string;
+  referee2: string;
+  linesPerson1: string;
+  linesPerson2: string;
+  timeKeeper1: string;
+  timeKeeper2: string;
+}
+
+interface Props {
+  data: GameData[];
+}
+
+const SearchPage = ({ data }: Props) => {
   const [selectedDisplayOption, setSelectedDisplayOption] = useState("Display");
 
   const handleOptionChange = (option: string) => {
@@ -15,6 +31,8 @@ const SearchPage = () => {
   return (
     <>
       <Header />
+      <SearchBar />
+
       <div className="radio-button-container">
         <RadioButton
           text="Display"
