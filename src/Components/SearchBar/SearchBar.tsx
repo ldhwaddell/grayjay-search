@@ -25,22 +25,32 @@ interface GameData {
 interface Props {
   games: GameData[];
   searchType: RefereeType;
+  placeHolder: string;
 }
 
-const SearchBar = ({ games, searchType }: Props) => {
+const SearchBar = ({ games, searchType, placeHolder }: Props) => {
   const [text, setText] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const onChangeHandler = (text: string) => {
     if (text.length > 0) {
       const regex = new RegExp(text, "gi");
+
       const matches = games.reduce((acc: Set<string>, game: GameData) => {
-        const match = game[searchType].match(regex);
-        if (match) {
+        // Only add matches that aren't in "- Not Set -"
+        if (
+          game[searchType] !== "- Not Set -" &&
+          game[searchType].match(regex)
+        ) {
           acc.add(game[searchType]);
         }
         return acc;
       }, new Set<string>());
+
+      if (!matches.size) {
+        setSuggestions(["No Matches"]);
+        return;
+      }
 
       setSuggestions(Array.from(matches));
     } else {
@@ -50,16 +60,41 @@ const SearchBar = ({ games, searchType }: Props) => {
     setText(text);
   };
 
-  console.log(suggestions);
+  const onSuggestHandler = (text: string) => {
+    if (text !== "No Matches") {
+      setText(text);
+    }
+    setSuggestions([]);
+  };
 
   return (
-    <>
+    <div className="search-wrapper">
       <input
         type="text"
         onChange={(e) => onChangeHandler(e.target.value)}
         value={text}
+        placeholder={placeHolder}
+        className="search"
+        onBlur={() => {
+          setTimeout(() => {
+            setSuggestions([]);
+          }, 100);
+        }}
       />
-    </>
+      {suggestions && suggestions.length > 0 && (
+        <div className="suggestions-container">
+          {suggestions.map((suggestion, i) => (
+            <div
+              key={i}
+              className="suggestion"
+              onClick={() => onSuggestHandler(suggestion)}
+            >
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

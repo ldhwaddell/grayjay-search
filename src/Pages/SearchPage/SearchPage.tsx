@@ -33,7 +33,11 @@ const SearchPage = ({ games }: Props) => {
       <Header />
 
       <div className="referee-search-container">
-        <SearchBar games={games} searchType="referee1" />
+        <SearchBar
+          games={games}
+          searchType="referee1"
+          placeHolder="Referee 1"
+        />
       </div>
 
       <div className="radio-button-container">
