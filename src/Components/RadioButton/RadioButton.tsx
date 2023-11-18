@@ -1,19 +1,36 @@
-import React from "react";
 import "./RadioButton.css";
 
-const RadioButton = ({ name, value, checked, onChange }: any) => {
-    
+interface Props {
+  text: string;
+  tooltipText: string;
+  checked: boolean;
+  onChange: () => void;
+}
+
+const RadioButton = ({ text, tooltipText, checked, onChange }: Props) => {
   return (
-    <label className="radio-container">
+    <div className="radio-container">
       <input
         type="radio"
-        name={name}
-        value={value}
+        id={text}
+        name="radio"
+        className="radio-input"
         checked={checked}
         onChange={onChange}
       />
-      {value}
-    </label>
+      <label htmlFor={text} className="radio-label">
+        {text}
+      </label>
+
+      <div className="tooltip">
+        <img
+          className="img"
+          src="./assets/question-mark.png"
+          alt="A question mark"
+        />
+        <span className="tooltiptext">{tooltipText}</span>
+      </div>
+    </div>
   );
 };
 
