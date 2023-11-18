@@ -47,8 +47,8 @@ const Popup = () => {
       try {
         const response = await sendMessage();
         if (response.isValidUrl) {
-          const data: GameData[] = await Cache.get();
-          setGameData(data);
+          const games: GameData[] = await Cache.get();
+          setGameData(games);
         }
 
         setOnValidPage(response.isValidUrl);
@@ -66,7 +66,15 @@ const Popup = () => {
     return <InvalidPage />;
   }
 
-  return <>{onValidPage ? <SearchPage data={gameData} /> : <InvalidPage />}</>;
+  return (
+    <>
+      {onValidPage ? (
+        <SearchPage games={gameData} />
+      ) : (
+        <SearchPage games={gameData} />
+      )}
+    </>
+  );
 };
 
 export default Popup;

@@ -18,10 +18,10 @@ interface GameData {
 }
 
 interface Props {
-  data: GameData[];
+  games: GameData[];
 }
 
-const SearchPage = ({ data }: Props) => {
+const SearchPage = ({ games }: Props) => {
   const [selectedDisplayOption, setSelectedDisplayOption] = useState("Display");
 
   const handleOptionChange = (option: string) => {
@@ -31,7 +31,10 @@ const SearchPage = ({ data }: Props) => {
   return (
     <>
       <Header />
-      <SearchBar />
+
+      <div className="referee-search-container">
+        <SearchBar games={games} searchType="referee1" />
+      </div>
 
       <div className="radio-button-container">
         <RadioButton
