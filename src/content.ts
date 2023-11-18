@@ -42,3 +42,5 @@ const scrapeLinks = (retries = 3, delayMs: number = 1000) => {
 window.addEventListener("load", () => scrapeLinks());
 
 export {};
+
+// ADD LITTLE REF LOGOS TO EACH GAME WITH WHOS ON IT

@@ -18,13 +18,13 @@ const SearchPage = () => {
       <div className="radio-button-container">
         <RadioButton
           text="Display"
-          tooltipText="Will only display games that match your search"
+          tooltipText="Only display games that match your search"
           checked={selectedDisplayOption === "Display"}
           onChange={() => handleOptionChange("Display")}
         />
         <RadioButton
           text="Highlight"
-          tooltipText="Will highlight games that match your search"
+          tooltipText="Highlight games that match your search"
           checked={selectedDisplayOption === "Highlight"}
           onChange={() => handleOptionChange("Highlight")}
         />
