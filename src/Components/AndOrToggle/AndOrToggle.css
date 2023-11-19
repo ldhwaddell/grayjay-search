@@ -1,12 +1,10 @@
 .toggle-button-cover {
-  margin: 10px;
-  width: 74px;
-  height: 36px;
+  width: 75px;
+  height: 44px;
   font-family: "Montserrat", sans-serif;
 }
 
-.knobs,
-.layer {
+.knobs {
   position: absolute;
   top: 0;
   right: 0;
@@ -14,12 +12,21 @@
   left: 0;
 }
 
+.layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: 4px;
+}
+
 .button {
   position: relative;
   top: 50%;
-  width: 74px;
-  height: 36px;
-  margin: -20px auto 0 auto;
+  width: 75px;
+  height: 44px;
+  margin: -22px auto 0 auto;
   overflow: hidden;
 }
 
@@ -29,7 +36,7 @@
 }
 
 .button.b2 {
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .checkbox {
@@ -59,7 +66,7 @@
 #button .knobs:after,
 #button .knobs span {
   position: absolute;
-  top: 4px;
+  top: 8px;
   width: 20px;
   height: 10px;
   font-size: 10px;
@@ -67,7 +74,7 @@
   text-align: center;
   line-height: 1;
   padding: 9px 4px;
-  border-radius: 2px;
+  border-radius: 4px;
   transition: 0.3s ease all;
 }
 
@@ -95,7 +102,7 @@
 }
 
 #button .checkbox:checked + .knobs:before {
-  left: 42px;
+  left: 43px;
   background-color: #f44336;
 }
 
