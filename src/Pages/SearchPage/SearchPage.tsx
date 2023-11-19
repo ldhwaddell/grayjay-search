@@ -55,10 +55,10 @@ const SearchPage = ({ games }: Props) => {
             searchType="referee1"
             placeHolder="Referee 1"
           />
-          <EditSearchButton
+          {/* <EditSearchButton
             add={!showSecondRefereeSearchBar}
             onClick={toggleSecondRefereeSearchBar}
-          />
+          /> */}
         </div>
         <AndOrToggle isAnd={isAndSelected} onToggle={handleToggleChange} />
         {showSecondRefereeSearchBar && (

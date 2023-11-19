@@ -9,7 +9,7 @@ const AndOrToggle = ({ isAnd, onToggle }: Props) => {
   const handleToggle = () => {
     onToggle(!isAnd);
   };
-  
+
   return (
     <>
       <div className="toggle-button-cover" onClick={handleToggle}>
