@@ -1,9 +1,7 @@
 .toggle-button-cover {
-  display: table-cell;
-  position: relative;
-  width: 200px;
-  height: 140px;
-  box-sizing: border-box;
+  margin: 10px;
+  width: 74px;
+  height: 36px;
   font-family: "Montserrat", sans-serif;
 }
 
