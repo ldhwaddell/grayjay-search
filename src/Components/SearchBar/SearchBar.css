@@ -16,7 +16,7 @@
   color: rgb(73, 80, 87);
   cursor: text;
   font-size: 15px;
-  line-height: 22.5px;
+  line-height: 22px;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
     border-width 0.15s ease-in-out;
   box-shadow: 0 1px 15px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.04);
