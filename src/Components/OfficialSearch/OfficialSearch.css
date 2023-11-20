@@ -1,0 +1,33 @@
+.search-with-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 10px 0px 10px;
+}
+
+.toggle-button-cover {
+  width: 0;
+  height: 42px;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  font-family: "Montserrat", sans-serif;
+  transition: width 0.3s ease-out;
+}
+
+.toggle-button-cover.grow {
+  width: 63px;
+  transition: width 0.3s ease-out;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.search-bar-slide-container {
+  max-height: 0;
+  transition: max-height 2s ease-out;
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.search-bar-slide-container.slide-down {
+  max-height: 200px;
+}

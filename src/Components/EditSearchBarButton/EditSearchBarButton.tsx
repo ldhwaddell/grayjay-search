@@ -1,24 +1,14 @@
-import { useState } from "react";
 import "./EditSearchBarButton.css";
 
 interface Props {
   add: boolean;
   onClick: () => void;
+  className: string;
 }
 
-const EditSearchButton = ({ add, onClick }: Props) => {
-  const [isShrunk, setIsShrunk] = useState(false);
-
-  const handleClick = () => {
-    onClick();
-    setIsShrunk(!isShrunk);
-  };
-
+const EditSearchButton = ({ add, onClick, className }: Props) => {
   return (
-    <button
-      className={`pushable ${isShrunk ? "shrink" : ""}`}
-      onClick={handleClick}
-    >
+    <button className={`pushable ${className}`} onClick={onClick}>
       <span className="edge"></span>
       <span className="front">{add ? "+" : "-"}</span>
     </button>

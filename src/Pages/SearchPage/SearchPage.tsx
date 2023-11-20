@@ -1,11 +1,8 @@
 import { useState } from "react";
 
 import Header from "../../Components/Header/Header";
+import OfficialSearch from "../../Components/OfficialSearch/OfficialSearch";
 import RadioButton from "../../Components/RadioButton/RadioButton";
-import SearchBar from "../../Components/SearchBar/SearchBar";
-import EditSearchButton from "../../Components/EditSearchBarButton/EditSearchBarButton";
-
-import AndOrToggle from "../../Components/AndOrToggle/AndOrToggle";
 
 import "./SearchPage.css";
 
@@ -26,49 +23,27 @@ interface Props {
 
 const SearchPage = ({ games }: Props) => {
   const [selectedDisplayOption, setSelectedDisplayOption] = useState("Display");
-  const [isAndSelected, setIsAndSelected] = useState(true);
-
-  const [showSecondRefereeSearchBar, setShowSecondRefereeSearchBar] =
-    useState(false);
 
   const handleOptionChange = (option: string) => {
     setSelectedDisplayOption(option);
   };
 
-  const handleToggleChange = (isAnd: boolean) => {
-    console.log(`Toggle is now in the ${isAnd ? "AND" : "OR"} position.`);
-    setIsAndSelected(isAnd);
-  };
-
-  const toggleSecondRefereeSearchBar = () => {
-    setShowSecondRefereeSearchBar((prev) => !prev);
-  };
+  // TODO: ADD QUERY STATE THAT CHANGES ARE HANDLED IN OfficialSearch
 
   return (
     <>
       <Header />
 
-      <div className="official-search-container">
-        <div className="search-bar-with-button">
-          <SearchBar
-            games={games}
-            searchType="referee1"
-            placeHolder="Referee 1"
-          />
-          {/* <EditSearchButton
-            add={!showSecondRefereeSearchBar}
-            onClick={toggleSecondRefereeSearchBar}
-          /> */}
-        </div>
-        <AndOrToggle isAnd={isAndSelected} onToggle={handleToggleChange} />
-        {showSecondRefereeSearchBar && (
-          <SearchBar
-            games={games}
-            searchType="referee2"
-            placeHolder="Referee 2"
-          />
-        )}
-      </div>
+      <OfficialSearch
+        games={games}
+        searchBar1={{ searchType: "referee1", placeHolder: "Referee #1" }}
+        searchBar2={{ searchType: "referee2", placeHolder: "Referee #2" }}
+      />
+      <OfficialSearch
+        games={games}
+        searchBar1={{ searchType: "linesPerson1", placeHolder: "Linesman #1" }}
+        searchBar2={{ searchType: "linesPerson2", placeHolder: "Linesman #2" }}
+      />
 
       <div className="radio-button-container">
         <RadioButton
