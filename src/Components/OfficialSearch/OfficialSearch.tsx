@@ -67,17 +67,12 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
           searchType={searchBar1.searchType}
           placeHolder={searchBar1.placeHolder}
         />
-        <div
-        // add a show/hide instead of grow. Add it in the props to component
-          className={`toggle-button-cover ${showSecondSearchBar ? "grow" : ""}`}
-        >
-          {showSecondSearchBar && (
-            <AndOrToggle
-              isAnd={isAnd}
-              handleToggleChange={handleToggleChange}
-            />
-          )}
-        </div>
+
+        <AndOrToggle
+          isAnd={isAnd}
+          handleToggleChange={handleToggleChange}
+          transition={`${showSecondSearchBar ? "grow" : ""}`}
+        />
 
         {/* Can be styled through prop as component never disappears */}
         <EditSearchButton
@@ -87,7 +82,7 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
         />
       </div>
 
-      <div
+      {/* <div
         className={`search-bar-slide-container ${
           showSecondSearchBar ? "slide-down" : ""
         }`}
@@ -99,7 +94,7 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
             placeHolder={searchBar2.placeHolder}
           />
         )}
-      </div>
+      </div> */}
     </>
   );
 };

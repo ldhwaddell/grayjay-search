@@ -54,11 +54,11 @@ const SearchPage = ({ games }: Props) => {
         searchBar1={{ searchType: "referee1", placeHolder: "Referee #1" }}
         searchBar2={{ searchType: "referee2", placeHolder: "Referee #2" }}
       />
-      <OfficialSearch
+      {/* <OfficialSearch
         games={games}
         searchBar1={{ searchType: "linesPerson1", placeHolder: "Linesman #1" }}
         searchBar2={{ searchType: "linesPerson2", placeHolder: "Linesman #2" }}
-      />
+      /> */}
 
       <div className="radio-button-container">
         <RadioButton
