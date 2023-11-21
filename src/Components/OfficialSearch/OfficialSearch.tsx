@@ -68,6 +68,7 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
           placeHolder={searchBar1.placeHolder}
         />
         <div
+        // add a show/hide instead of grow. Add it in the props to component
           className={`toggle-button-cover ${showSecondSearchBar ? "grow" : ""}`}
         >
           {showSecondSearchBar && (

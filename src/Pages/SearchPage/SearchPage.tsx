@@ -23,13 +23,28 @@ interface Props {
 
 const SearchPage = ({ games }: Props) => {
   const [selectedDisplayOption, setSelectedDisplayOption] = useState("Display");
+  const [query, setQuery] = useState({
+    referee: {
+      referee1: null,
+      referee2: null,
+      condition: null,
+    },
+    linesman: {
+      linesman1: null,
+      linesman2: null,
+      condition: null,
+    },
+  });
 
   const handleOptionChange = (option: string) => {
     setSelectedDisplayOption(option);
   };
 
-  // TODO: ADD QUERY STATE THAT CHANGES ARE HANDLED IN OfficialSearch
-
+  // TODO: 1. Refactor animation styles (use react to change styles, not add/remove component?)
+  //  2. Fix sizing of popup
+  // 3. Build and create handlers for query object. 
+  // 4. message passing to content script
+  // 5. Build ability for content script to hide/show game divs.
   return (
     <>
       <Header />
