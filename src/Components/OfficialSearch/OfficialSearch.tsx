@@ -82,19 +82,14 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
         />
       </div>
 
-      {/* <div
-        className={`search-bar-slide-container ${
+      <SearchBar
+        games={games}
+        searchType={searchBar2.searchType}
+        placeHolder={searchBar2.placeHolder}
+        transition={`search-bar-slide ${
           showSecondSearchBar ? "slide-down" : ""
         }`}
-      >
-        {showSecondSearchBar && (
-          <SearchBar
-            games={games}
-            searchType={searchBar2.searchType}
-            placeHolder={searchBar2.placeHolder}
-          />
-        )}
-      </div> */}
+      />
     </>
   );
 };

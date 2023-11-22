@@ -42,7 +42,7 @@ const SearchPage = ({ games }: Props) => {
 
   // TODO: 1. Refactor animation styles (use react to change styles, not add/remove component?)
   //  2. Fix sizing of popup
-  // 3. Build and create handlers for query object. 
+  // 3. Build and create handlers for query object.
   // 4. message passing to content script
   // 5. Build ability for content script to hide/show game divs.
   return (

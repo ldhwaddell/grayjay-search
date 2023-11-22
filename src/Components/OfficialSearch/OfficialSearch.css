@@ -4,14 +4,3 @@
   justify-content: space-between;
   margin: 10px 10px 0px 10px;
 }
-
-.search-bar-slide-container {
-  max-height: 0;
-  transition: max-height 2s ease-out;
-  margin-top: 10px;
-  margin-left: 10px;
-}
-
-.search-bar-slide-container.slide-down {
-  max-height: 200px;
-}

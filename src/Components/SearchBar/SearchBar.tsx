@@ -26,9 +26,10 @@ interface Props {
   games: GameData[];
   searchType: RefereeType;
   placeHolder: string;
+  transition?: string;
 }
 
-const SearchBar = ({ games, searchType, placeHolder }: Props) => {
+const SearchBar = ({ games, searchType, placeHolder, transition }: Props) => {
   const [text, setText] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
@@ -68,7 +69,7 @@ const SearchBar = ({ games, searchType, placeHolder }: Props) => {
   };
 
   return (
-    <div className="search-wrapper">
+    <div className={`search-wrapper ${transition}`}>
       <input
         type="text"
         onChange={(e) => onChangeHandler(e.target.value)}
@@ -95,7 +96,7 @@ const SearchBar = ({ games, searchType, placeHolder }: Props) => {
         </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default SearchBar;

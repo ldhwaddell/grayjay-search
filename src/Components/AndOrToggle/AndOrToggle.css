@@ -1,15 +1,16 @@
 .toggle-button-cover {
+  opacity: 0;
   width: 0;
   height: 42px;
-  transition: width 0.3s ease;
+  transition: width 0.3s ease, opacity 0.3s ease;
   overflow: hidden;
   font-family: "Montserrat", sans-serif;
-  transition: width 0.3s ease-out;
 }
 
 .toggle-button-cover.grow {
+  opacity: 1;
   width: 63px;
-  transition: width 0.3s ease-out;
+  transition: width 0.3s ease-out, opacity 0.3s ease-out;
   border: 1px solid #ced4da;
   border-radius: 4px;
 }
