@@ -24,13 +24,13 @@ interface GameData {
 
 interface Props {
   games: GameData[];
-  searchType: RefereeType;
+  type: RefereeType;
   placeHolder: string;
   transition?: string;
 }
 
-const SearchBar = ({ games, searchType, placeHolder, transition }: Props) => {
-  const [text, setText] = useState("");
+const SearchBar = ({ games, type, placeHolder, transition }: Props) => {
+  const [text, setText] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   const onChangeHandler = (text: string) => {
@@ -38,33 +38,37 @@ const SearchBar = ({ games, searchType, placeHolder, transition }: Props) => {
       const regex = new RegExp(text, "gi");
 
       const matches = games.reduce((acc: Set<string>, game: GameData) => {
-        // Only add matches that aren't in "- Not Set -"
-        if (
-          game[searchType] !== "- Not Set -" &&
-          game[searchType].match(regex)
-        ) {
-          acc.add(game[searchType]);
+        // Only add matches that aren't "- Not Set -"
+        if (game[type] !== "- Not Set -" && game[type].match(regex)) {
+          acc.add(game[type]);
         }
+
         return acc;
       }, new Set<string>());
 
+      // If no matches, let user know
       if (!matches.size) {
         setSuggestions(["No Matches"]);
         return;
       }
 
+      // Otherwise set suggestions to matches
       setSuggestions(Array.from(matches));
     } else {
+      // No text; set suggestions to empty array
       setSuggestions([]);
     }
 
+    // update text in search bar
     setText(text);
   };
 
   const onSuggestHandler = (text: string) => {
+    // Autocomplete click if a valid name
     if (text !== "No Matches") {
       setText(text);
     }
+    // Otherwise make "No matches" suggestion go away
     setSuggestions([]);
   };
 
@@ -82,7 +86,7 @@ const SearchBar = ({ games, searchType, placeHolder, transition }: Props) => {
           }, 100);
         }}
       />
-      {suggestions && suggestions.length > 0 && (
+      {suggestions.length > 0 && (
         <div className="suggestions-container">
           {suggestions.map((suggestion, i) => (
             <div
@@ -96,7 +100,7 @@ const SearchBar = ({ games, searchType, placeHolder, transition }: Props) => {
         </div>
       )}
     </div>
-  );  
+  );
 };
 
 export default SearchBar;
