@@ -1,4 +1,4 @@
-import "./EditSearchBarButton.css";
+import "./AddButton.css";
 
 interface Props {
   add: boolean;
@@ -6,7 +6,7 @@ interface Props {
   className: string;
 }
 
-const EditSearchButton = ({ add, onClick, className }: Props) => {
+const AddButton = ({ add, onClick, className }: Props) => {
   return (
     <button className={`pushable ${className}`} onClick={onClick}>
       <span className="edge"></span>
@@ -15,4 +15,4 @@ const EditSearchButton = ({ add, onClick, className }: Props) => {
   );
 };
 
-export default EditSearchButton;
+export default AddButton;

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
 import SearchBar from "../../Components/SearchBar/SearchBar";
-import EditSearchButton from "../../Components/EditSearchBarButton/EditSearchBarButton";
+import AddButton from "../AddButton/AddButton";
 
-import AndOrToggle from "../../Components/AndOrToggle/AndOrToggle";
+import Toggle from "../Toggle/Toggle";
 
 import "./OfficialSearch.css";
 
@@ -68,14 +68,14 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
           placeHolder={searchBar1.placeHolder}
         />
 
-        <AndOrToggle
+        <Toggle
           isAnd={isAnd}
           handleToggleChange={handleToggleChange}
           transition={`${showSecondSearchBar ? "grow" : ""}`}
         />
 
         {/* Can be styled through prop as component never disappears */}
-        <EditSearchButton
+        <AddButton
           add={!showSecondSearchBar}
           onClick={toggleSecondSearchBar}
           className={`${showSecondSearchBar ? "shrink" : ""}`}

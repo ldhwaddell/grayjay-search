@@ -1,4 +1,4 @@
-import "./AndOrToggle.css";
+import "./Toggle.css";
 
 interface Props {
   isAnd: boolean;
@@ -6,7 +6,7 @@ interface Props {
   transition: string;
 }
 
-const AndOrToggle = ({ isAnd, handleToggleChange, transition }: Props) => {
+const Toggle = ({ isAnd, handleToggleChange, transition }: Props) => {
   return (
     <div className={`toggle-button-cover ${transition}`}>
       <div
@@ -24,4 +24,4 @@ const AndOrToggle = ({ isAnd, handleToggleChange, transition }: Props) => {
   );
 };
 
-export default AndOrToggle;
+export default Toggle;
