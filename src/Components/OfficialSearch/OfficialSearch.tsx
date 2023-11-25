@@ -28,24 +28,17 @@ type RefereeType =
 
 interface Props {
   games: GameData[];
-  searchBar1: {
-    searchType: RefereeType;
+  primarySearchBar: {
+    type: RefereeType;
     placeHolder: string;
   };
-  searchBar2: {
-    searchType: RefereeType;
+  secondarySearchBar: {
+    type: RefereeType;
     placeHolder: string;
   };
 }
 
-/**
- * Props:
- * - some sort of query props that is held in SearchPage.tsx
- * - games: all the games for the search to use
- *
- */
-
-const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
+const OfficialSearch = ({ games, primarySearchBar, secondarySearchBar }: Props) => {
   const [isAnd, setIsAnd] = useState(true);
   const [showSecondSearchBar, setShowSecondSearchBar] = useState(false);
 
@@ -64,8 +57,8 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
       <div className="search-with-button">
         <SearchBar
           games={games}
-          searchType={searchBar1.searchType}
-          placeHolder={searchBar1.placeHolder}
+          type={primarySearchBar.type}
+          placeHolder={primarySearchBar.placeHolder}
         />
 
         <Toggle
@@ -84,8 +77,8 @@ const OfficialSearch = ({ games, searchBar1, searchBar2 }: Props) => {
 
       <SearchBar
         games={games}
-        searchType={searchBar2.searchType}
-        placeHolder={searchBar2.placeHolder}
+        type={secondarySearchBar.type}
+        placeHolder={secondarySearchBar.placeHolder}
         transition={`search-bar-slide ${
           showSecondSearchBar ? "slide-down" : ""
         }`}

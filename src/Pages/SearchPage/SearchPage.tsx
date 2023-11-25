@@ -51,13 +51,16 @@ const SearchPage = ({ games }: Props) => {
 
       <OfficialSearch
         games={games}
-        searchBar1={{ searchType: "referee1", placeHolder: "Referee #1" }}
-        searchBar2={{ searchType: "referee2", placeHolder: "Referee #2" }}
+        primarySearchBar={{ type: "referee1", placeHolder: "Referee #1" }}
+        secondarySearchBar={{ type: "referee2", placeHolder: "Referee #2" }}
       />
       <OfficialSearch
         games={games}
-        searchBar1={{ searchType: "linesPerson1", placeHolder: "Linesman #1" }}
-        searchBar2={{ searchType: "linesPerson2", placeHolder: "Linesman #2" }}
+        primarySearchBar={{ type: "linesPerson1", placeHolder: "Linesman #1" }}
+        secondarySearchBar={{
+          type: "linesPerson2",
+          placeHolder: "Linesman #2",
+        }}
       />
 
       <div className="radio-button-container">
