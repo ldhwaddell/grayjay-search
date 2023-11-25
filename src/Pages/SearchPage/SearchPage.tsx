@@ -22,7 +22,7 @@ interface Props {
 }
 
 const SearchPage = ({ games }: Props) => {
-  const [selectedDisplayOption, setSelectedDisplayOption] = useState("Display");
+  const [selectedDisplayOption, setSelectedDisplayOption] = useState("Highlight");
   const [query, setQuery] = useState({
     referee: {
       referee1: null,
@@ -34,6 +34,7 @@ const SearchPage = ({ games }: Props) => {
       linesman2: null,
       condition: null,
     },
+    output: "Highlight",
   });
 
   const handleOptionChange = (option: string) => {
@@ -64,17 +65,18 @@ const SearchPage = ({ games }: Props) => {
       />
 
       <div className="radio-button-container">
+      <RadioButton
+          text="Highlight"
+          tooltipText="Highlight games that match your search"
+          checked={selectedDisplayOption === "Highlight"}
+          onChange={() => handleOptionChange("Highlight")}
+        />
+
         <RadioButton
           text="Display"
           tooltipText="Only display games that match your search"
           checked={selectedDisplayOption === "Display"}
           onChange={() => handleOptionChange("Display")}
-        />
-        <RadioButton
-          text="Highlight"
-          tooltipText="Highlight games that match your search"
-          checked={selectedDisplayOption === "Highlight"}
-          onChange={() => handleOptionChange("Highlight")}
         />
       </div>
     </>
