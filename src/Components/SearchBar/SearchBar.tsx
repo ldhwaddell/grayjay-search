@@ -2,34 +2,23 @@ import { useState } from "react";
 
 import "./SearchBar.css";
 
-// Define specific keys that can be used for searching.
-type RefereeType =
-  | "referee1"
-  | "referee2"
-  | "linesPerson1"
-  | "linesPerson2"
-  | "timeKeeper1"
-  | "timeKeeper2";
-
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
+import { GameData, Official } from "../../types";
 
 interface Props {
   games: GameData[];
-  type: RefereeType;
+  type: Official;
   placeHolder: string;
   transition?: string;
+  handleOfficialChange: (official: Official, name: string) => void;
 }
 
-const SearchBar = ({ games, type, placeHolder, transition }: Props) => {
+const SearchBar = ({
+  games,
+  type,
+  placeHolder,
+  transition,
+  handleOfficialChange,
+}: Props) => {
   const [text, setText] = useState<string>("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
@@ -66,6 +55,7 @@ const SearchBar = ({ games, type, placeHolder, transition }: Props) => {
   const onSuggestHandler = (text: string) => {
     // Autocomplete click if a valid name
     if (text !== "No Matches") {
+      handleOfficialChange(type, text);
       setText(text);
     }
     // Otherwise make "No matches" suggestion go away
