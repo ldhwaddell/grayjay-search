@@ -5,38 +5,12 @@ import SearchPage from "./Pages/SearchPage/SearchPage";
 
 import { Cache } from "./Cache";
 
-// Type Defs
-type CheckValidUrlMessage = {
-  type: string;
-};
+import { GameData } from "./types";
 
-type CheckValidUrlResponse = {
-  isValidUrl: boolean;
-};
+const regex: RegExp =
+  /^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/;
 
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
-
-// Send message helper function
-const message: CheckValidUrlMessage = { type: "CHECK_VALID_URL" };
-const sendMessage = (): Promise<CheckValidUrlResponse> => {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(message, (response: CheckValidUrlResponse) => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      }
-      resolve(response);
-    });
-  });
-};
+const isValidUrl = (url: string): boolean => regex.test(url);
 
 const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
@@ -45,13 +19,19 @@ const Popup = () => {
   useEffect(() => {
     const checkValidUrl = async () => {
       try {
-        const response = await sendMessage();
-        if (response.isValidUrl) {
+        const [tab] = await chrome.tabs.query({
+          active: true,
+          currentWindow: true,
+        });
+
+        const valid: boolean = !!tab.url && isValidUrl(tab.url);
+
+        if (valid) {
           const games: GameData[] = await Cache.get();
           setGameData(games);
         }
 
-        setOnValidPage(response.isValidUrl);
+        setOnValidPage(valid);
       } catch (error) {
         console.error("Error:", JSON.stringify(error));
         setOnValidPage(false);
@@ -66,15 +46,7 @@ const Popup = () => {
     return <InvalidPage />;
   }
 
-  return (
-    <>
-      {onValidPage ? (
-        <SearchPage games={gameData} />
-      ) : (
-        <SearchPage games={gameData} />
-      )}
-    </>
-  );
+  return <>{onValidPage ? <SearchPage games={gameData} /> : <InvalidPage />}</>;
 };
 
 export default Popup;
