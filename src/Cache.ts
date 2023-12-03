@@ -1,13 +1,4 @@
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
+import { GameData } from "./types";
 
 const GAME_CACHE_KEY: string = "games";
 
