@@ -4,13 +4,9 @@ import InvalidPage from "./Pages/InvalidPage/InvalidPage";
 import SearchPage from "./Pages/SearchPage/SearchPage";
 
 import { Cache } from "./Cache";
+import { isValidUrl } from "./utils";
 
 import { GameData } from "./types";
-
-const regex: RegExp =
-  /^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/;
-
-const isValidUrl = (url: string): boolean => regex.test(url);
 
 const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
