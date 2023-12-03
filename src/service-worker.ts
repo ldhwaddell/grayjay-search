@@ -1,112 +1,28 @@
 import { parse } from "html-to-ast";
 import { Cache } from "./Cache";
 
-// Type Defs
-type UrlCheckResult = { isValidUrl: boolean };
+import {
+  ErrorScrapingLinksMessage,
+  ProcessLinksMessage,
+  GameData,
+  MaybeDoc,
+  OfficialNode,
+} from "./types";
 
-// Response types
-type CheckUrlResponse = {
-  isValidUrl: boolean;
-};
-
-type ProcessLinksResponse = {
-  requestRescrape: boolean;
-};
-
-type MessageResponse = CheckUrlResponse | ProcessLinksResponse;
-
-// sendResponse function types
-type CheckUrlResponseFunction = (response: CheckUrlResponse) => void;
-
-// Message types
-type CheckValidUrlMessage = {
-  type: "CHECK_VALID_URL";
-};
-
-type ProcessLinksMessage = {
-  type: "PROCESS_LINKS";
-  links: string[];
-};
-
-type ErrorScrapingLinksMessage = {
-  type: "ERROR_SCRAPING_LINKS";
-};
-
-type Message =
-  | CheckValidUrlMessage
-  | ProcessLinksMessage
-  | ErrorScrapingLinksMessage;
-
-// HTML node types
-interface MaybeDoc {
-  type?: string;
-  text?: string;
-  content?: string;
-  voidElement?: boolean;
-  name?: string;
-  style?: string[];
-  attrs?: Record<string, string | boolean | number>;
-  children?: MaybeDoc[];
-  comment?: string;
-}
-
-interface OfficialNode extends MaybeDoc {
-  attrs: {
-    readonly: string;
-    value: string;
-  };
-}
-
-// Game object types
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
-
-const regex: RegExp =
-  /^https?:\/\/(?:www\.)?grayjayleagues\.com\/.*[?&]all_games=1(&|$).*/;
-
-const isValidUrl = (url: string): boolean => regex.test(url);
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+type Message = ErrorScrapingLinksMessage | ProcessLinksMessage;
 
 // State flag
 let isProcessingLinks = false;
 
-const isOfficial = (node: MaybeDoc): node is OfficialNode =>
-  node.type === "tag" &&
-  node.name === "input" &&
-  node.attrs?.readonly !== undefined &&
-  typeof node.attrs.value === "string";
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const checkActiveTabUrl = async (): Promise<UrlCheckResult> => {
-  try {
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true,
-    });
-    // !!tab.url converts it to boolean
-    return { isValidUrl: !!tab.url && isValidUrl(tab.url) };
-  } catch (error) {
-    console.error("Error checking if the tab URL is valid:", error);
-    return { isValidUrl: false };
-  }
-};
-
-const handleCheckValidUrl = async (sendResponse: CheckUrlResponseFunction) => {
-  try {
-    const isValid: CheckUrlResponse = await checkActiveTabUrl();
-    sendResponse(isValid);
-  } catch (error) {
-    console.error("Error checking active tab URL: ", error);
-    sendResponse({ isValidUrl: false });
-  }
+const isOfficial = (node: MaybeDoc): node is OfficialNode => {
+  return (
+    node.type === "tag" &&
+    node.name === "input" &&
+    node.attrs?.readonly !== undefined &&
+    typeof node.attrs.value === "string"
+  );
 };
 
 const extractOfficials = (ast: MaybeDoc[]): string[] => {
@@ -168,8 +84,8 @@ const fetchGameData = async (url: string): Promise<GameData | null> => {
       id,
       referee1: officials[5],
       referee2: officials[4],
-      linesPerson1: officials[3],
-      linesPerson2: officials[2],
+      linesman1: officials[3],
+      linesman2: officials[2],
       timeKeeper1: officials[1],
       timeKeeper2: officials[0],
     };
@@ -266,13 +182,9 @@ chrome.runtime.onMessage.addListener(
   (
     message: Message,
     _: chrome.runtime.MessageSender,
-    sendResponse: (response: MessageResponse) => void
+    sendResponse: (response: any) => void
   ) => {
     switch (message.type) {
-      case "CHECK_VALID_URL":
-        handleCheckValidUrl(sendResponse);
-        return true;
-
       case "PROCESS_LINKS":
         handleProcessLinks(message);
         break;
