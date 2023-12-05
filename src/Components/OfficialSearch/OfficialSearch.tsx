@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import SearchBar from "../../Components/SearchBar/SearchBar";
 import AddButton from "../AddButton/AddButton";
@@ -7,48 +7,45 @@ import Toggle from "../Toggle/Toggle";
 
 import "./OfficialSearch.css";
 
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
-
-type RefereeType =
-  | "referee1"
-  | "referee2"
-  | "linesPerson1"
-  | "linesPerson2"
-  | "timeKeeper1"
-  | "timeKeeper2";
+import { GameData, Official, Condition } from "../../types";
 
 interface Props {
   games: GameData[];
   primarySearchBar: {
-    type: RefereeType;
+    type: Official;
     placeHolder: string;
   };
   secondarySearchBar: {
-    type: RefereeType;
+    type: Official;
     placeHolder: string;
   };
+  handleOfficialChange: (official: Official, name: string | null) => void;
+  handleConditionChange: (official: Official, condition: Condition) => void;
 }
 
-const OfficialSearch = ({ games, primarySearchBar, secondarySearchBar }: Props) => {
+const OfficialSearch = ({
+  games,
+  primarySearchBar,
+  secondarySearchBar,
+  handleOfficialChange,
+  handleConditionChange,
+}: Props) => {
   const [isAnd, setIsAnd] = useState(true);
   const [showSecondSearchBar, setShowSecondSearchBar] = useState(false);
 
   const handleToggleChange = (isAnd: boolean) => {
-    console.log(`Toggle is now in the ${isAnd ? "AND" : "OR"} position.`);
+    const { type } = primarySearchBar;
     setIsAnd(isAnd);
+    handleConditionChange(type, isAnd ? "AND" : "OR");
   };
 
   const toggleSecondSearchBar = () => {
-    console.log(`state: ${showSecondSearchBar}`);
+    if (!showSecondSearchBar) {
+      const { type } = primarySearchBar;
+      handleOfficialChange(type, null);
+      handleConditionChange(type, "OR");
+    }
+
     setShowSecondSearchBar((prev) => !prev);
   };
 
@@ -59,6 +56,7 @@ const OfficialSearch = ({ games, primarySearchBar, secondarySearchBar }: Props) 
           games={games}
           type={primarySearchBar.type}
           placeHolder={primarySearchBar.placeHolder}
+          handleOfficialChange={handleOfficialChange}
         />
 
         <Toggle
@@ -82,6 +80,7 @@ const OfficialSearch = ({ games, primarySearchBar, secondarySearchBar }: Props) 
         transition={`search-bar-slide ${
           showSecondSearchBar ? "slide-down" : ""
         }`}
+        handleOfficialChange={handleOfficialChange}
       />
     </>
   );

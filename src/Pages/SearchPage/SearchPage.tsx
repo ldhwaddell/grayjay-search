@@ -6,46 +6,74 @@ import RadioButton from "../../Components/RadioButton/RadioButton";
 
 import "./SearchPage.css";
 
-interface GameData {
-  url: string;
-  id: number;
-  referee1: string;
-  referee2: string;
-  linesPerson1: string;
-  linesPerson2: string;
-  timeKeeper1: string;
-  timeKeeper2: string;
-}
+import {
+  GameData,
+  Query,
+  RefereeQuery,
+  LinesmanQuery,
+  Official,
+  Condition,
+} from "../../types";
 
 interface Props {
   games: GameData[];
 }
 
 const SearchPage = ({ games }: Props) => {
-  const [selectedDisplayOption, setSelectedDisplayOption] = useState("Highlight");
-  const [query, setQuery] = useState({
+  const [query, setQuery] = useState<Query>({
     referee: {
       referee1: null,
       referee2: null,
-      condition: null,
+      condition: "OR",
     },
     linesman: {
       linesman1: null,
       linesman2: null,
-      condition: null,
+      condition: "OR",
     },
-    output: "Highlight",
+    matches: "Highlight",
   });
 
-  const handleOptionChange = (option: string) => {
-    setSelectedDisplayOption(option);
+  const handleQueryChange = (
+    type: "referee" | "linesman",
+    field: keyof RefereeQuery | keyof LinesmanQuery,
+    value: string | null
+  ) => {
+    setQuery((prevQuery) => ({
+      ...prevQuery,
+      [type]: {
+        ...prevQuery[type],
+        [field]: value,
+      },
+    }));
   };
 
-  // TODO: 1. Refactor animation styles (use react to change styles, not add/remove component?)
-  //  2. Fix sizing of popup
-  // 3. Build and create handlers for query object.
-  // 4. message passing to content script
-  // 5. Build ability for content script to hide/show game divs.
+  const handleOfficialChange = (official: Official, name: string | null) => {
+    const type: "referee" | "linesman" = official.startsWith("linesman")
+      ? "linesman"
+      : "referee";
+
+    handleQueryChange(type, official, name);
+  };
+
+  const handleConditionChange = (official: Official, condition: Condition) => {
+    const type: "referee" | "linesman" = official.startsWith("linesman")
+      ? "linesman"
+      : "referee";
+    handleQueryChange(type, "condition", condition);
+  };
+
+  const handleMatchChange = (match: string) => {
+    setQuery((prevQuery) => ({
+      ...prevQuery,
+      matches: match,
+    }));
+  };
+
+  console.log(`QUERY: ${JSON.stringify(query)}`);
+
+  // SEND MESSAGE WITH QUERY AND OUTPUT OPTION
+
   return (
     <>
       <Header />
@@ -54,29 +82,31 @@ const SearchPage = ({ games }: Props) => {
         games={games}
         primarySearchBar={{ type: "referee1", placeHolder: "Referee #1" }}
         secondarySearchBar={{ type: "referee2", placeHolder: "Referee #2" }}
+        handleOfficialChange={handleOfficialChange}
+        handleConditionChange={handleConditionChange}
       />
-      <OfficialSearch
+      {/* <OfficialSearch
         games={games}
         primarySearchBar={{ type: "linesPerson1", placeHolder: "Linesman #1" }}
         secondarySearchBar={{
           type: "linesPerson2",
           placeHolder: "Linesman #2",
         }}
-      />
+      /> */}
 
       <div className="radio-button-container">
-      <RadioButton
+        <RadioButton
           text="Highlight"
           tooltipText="Highlight games that match your search"
-          checked={selectedDisplayOption === "Highlight"}
-          onChange={() => handleOptionChange("Highlight")}
+          checked={query.matches === "Highlight"}
+          onChange={() => handleMatchChange("Highlight")}
         />
 
         <RadioButton
           text="Display"
           tooltipText="Only display games that match your search"
-          checked={selectedDisplayOption === "Display"}
-          onChange={() => handleOptionChange("Display")}
+          checked={query.matches === "Display"}
+          onChange={() => handleMatchChange("Display")}
         />
       </div>
     </>
