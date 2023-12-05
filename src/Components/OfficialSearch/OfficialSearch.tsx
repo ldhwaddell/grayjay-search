@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import SearchBar from "../../Components/SearchBar/SearchBar";
-import AddButton from "../AddButton/AddButton";
 
 import Toggle from "../Toggle/Toggle";
 
@@ -31,7 +30,6 @@ const OfficialSearch = ({
   handleConditionChange,
 }: Props) => {
   const [isAnd, setIsAnd] = useState(true);
-  const [showSecondSearchBar, setShowSecondSearchBar] = useState(false);
 
   const handleToggleChange = (isAnd: boolean) => {
     const { type } = primarySearchBar;
@@ -39,19 +37,9 @@ const OfficialSearch = ({
     handleConditionChange(type, isAnd ? "AND" : "OR");
   };
 
-  const toggleSecondSearchBar = () => {
-    if (!showSecondSearchBar) {
-      const { type } = primarySearchBar;
-      handleOfficialChange(type, null);
-      handleConditionChange(type, "OR");
-    }
-
-    setShowSecondSearchBar((prev) => !prev);
-  };
-
   return (
     <>
-      <div className="search-with-button">
+      <div className="search-with-toggle">
         <SearchBar
           games={games}
           type={primarySearchBar.type}
@@ -59,29 +47,17 @@ const OfficialSearch = ({
           handleOfficialChange={handleOfficialChange}
         />
 
-        <Toggle
-          isAnd={isAnd}
-          handleToggleChange={handleToggleChange}
-          transition={`${showSecondSearchBar ? "grow" : ""}`}
-        />
-
-        {/* Can be styled through prop as component never disappears */}
-        <AddButton
-          add={!showSecondSearchBar}
-          onClick={toggleSecondSearchBar}
-          className={`${showSecondSearchBar ? "shrink" : ""}`}
-        />
+        <Toggle isAnd={isAnd} handleToggleChange={handleToggleChange} />
       </div>
 
-      <SearchBar
-        games={games}
-        type={secondarySearchBar.type}
-        placeHolder={secondarySearchBar.placeHolder}
-        transition={`search-bar-slide ${
-          showSecondSearchBar ? "slide-down" : ""
-        }`}
-        handleOfficialChange={handleOfficialChange}
-      />
+      <div className="search-bar-secondary">
+        <SearchBar
+          games={games}
+          type={secondarySearchBar.type}
+          placeHolder={secondarySearchBar.placeHolder}
+          handleOfficialChange={handleOfficialChange}
+        />
+      </div>
     </>
   );
 };
