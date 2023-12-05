@@ -5,6 +5,24 @@
   box-sizing: border-box;
 }
 
+.search-clear-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-image: url("/public/assets/x.png");
+  background-size: contain;
+  height: 16px;
+  width: 16px;
+  opacity: 0.5;
+  cursor: pointer;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.search-clear-icon:hover {
+  opacity: 1;
+}
+
 .search {
   appearance: auto;
   width: 100%;

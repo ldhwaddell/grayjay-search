@@ -74,6 +74,8 @@ const SearchBar = ({
           }, 100);
         }}
       />
+      <i className="search-clear-icon" onClick={() => setText("")}></i>
+
       {suggestions.length > 0 && (
         <div className="suggestions-container">
           {suggestions.map((suggestion, i) => (
