@@ -8,7 +8,6 @@ interface Props {
   games: GameData[];
   type: Official;
   placeHolder: string;
-  transition?: string;
   handleOfficialChange: (official: Official, name: string) => void;
 }
 
@@ -16,7 +15,6 @@ const SearchBar = ({
   games,
   type,
   placeHolder,
-  transition,
   handleOfficialChange,
 }: Props) => {
   const [text, setText] = useState<string>("");
@@ -63,7 +61,7 @@ const SearchBar = ({
   };
 
   return (
-    <div className={`search-wrapper ${transition}`}>
+    <div className="search-wrapper">
       <input
         type="text"
         onChange={(e) => onChangeHandler(e.target.value)}

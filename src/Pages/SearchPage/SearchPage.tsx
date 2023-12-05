@@ -87,11 +87,13 @@ const SearchPage = ({ games }: Props) => {
       />
       {/* <OfficialSearch
         games={games}
-        primarySearchBar={{ type: "linesPerson1", placeHolder: "Linesman #1" }}
+        primarySearchBar={{ type: "linesman1", placeHolder: "Linesman #1" }}
         secondarySearchBar={{
-          type: "linesPerson2",
+          type: "linesman2",
           placeHolder: "Linesman #2",
         }}
+        handleOfficialChange={handleOfficialChange}
+        handleConditionChange={handleConditionChange}
       /> */}
 
       <div className="radio-button-container">
