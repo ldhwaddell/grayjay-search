@@ -1,18 +1,7 @@
 .toggle-button-cover {
-  opacity: 0;
-  width: 0;
-  height: 42px;
-  transition: width 0.3s ease, opacity 0.3s ease;
-  overflow: hidden;
-  font-family: "Montserrat", sans-serif;
-}
-
-.toggle-button-cover.grow {
-  opacity: 1;
   width: 63px;
-  transition: width 0.3s ease-out, opacity 0.3s ease-out;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
+  height: 42px;
+  font-family: "Montserrat", sans-serif;
 }
 
 .knobs {

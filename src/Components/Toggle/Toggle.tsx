@@ -3,12 +3,11 @@ import "./Toggle.css";
 interface Props {
   isAnd: boolean;
   handleToggleChange: (isAnd: boolean) => void;
-  transition: string;
 }
 
-const Toggle = ({ isAnd, handleToggleChange, transition }: Props) => {
+const Toggle = ({ isAnd, handleToggleChange }: Props) => {
   return (
-    <div className={`toggle-button-cover ${transition}`}>
+    <div className="toggle-button-cover">
       <div
         className="button"
         id="button"
