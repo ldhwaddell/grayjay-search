@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Header from "../../Components/Header/Header";
 import RadioButton from "../../Components/RadioButton/RadioButton";
 import SearchBar from "../../Components/SearchBar/SearchBar";
 import Toggle from "../../Components/Toggle/Toggle";
+
+import { getCurrentTab } from "../../utils";
 
 import "./SearchPage.css";
 
@@ -14,6 +16,7 @@ import {
   LinesmanQuery,
   Official,
   Condition,
+  QueryChangeMessage,
 } from "../../types";
 
 interface Props {
@@ -61,7 +64,6 @@ const SearchPage = ({ games }: Props) => {
     official: "referee" | "linesman",
     condition: Condition
   ) => {
-
     const toggle: Condition = condition === "AND" ? "OR" : "AND";
     handleQueryChange(official, "condition", toggle);
   };
@@ -73,7 +75,18 @@ const SearchPage = ({ games }: Props) => {
     }));
   };
 
-  console.log(`QUERY: ${JSON.stringify(query)}`);
+  useEffect(() => {
+    const sendMessage = async (query: Query) => {
+      const tab = await getCurrentTab();
+
+      if (tab.id) {
+        const message: QueryChangeMessage = { type: "QUERY_CHANGE", query };
+        chrome.tabs.sendMessage(tab.id, message);
+      }
+    };
+
+    sendMessage(query);
+  }, [query]);
 
   return (
     <div className="container">
@@ -102,7 +115,7 @@ const SearchPage = ({ games }: Props) => {
       />
 
       {/* Find better way */}
-      {/* <div className="search-with-toggle" style={{ marginTop: -10 }}>
+      <div className="search-with-toggle" style={{ marginTop: -10 }}>
         <SearchBar
           games={games}
           type="linesman1"
@@ -110,10 +123,11 @@ const SearchPage = ({ games }: Props) => {
           handleOfficialChange={handleOfficialChange}
         />
         <Toggle
-          isAnd={isLinesmanAnd}
-          handleToggleChange={handleLinesmanToggleChange}
+          handleClick={() =>
+            handleToggleChange("linesman", query.linesman.condition)
+          }
         />
-      </div> */}
+      </div>
       <SearchBar
         games={games}
         type="linesman2"

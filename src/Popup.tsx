@@ -4,7 +4,7 @@ import InvalidPage from "./Pages/InvalidPage/InvalidPage";
 import SearchPage from "./Pages/SearchPage/SearchPage";
 
 import { Cache } from "./Cache";
-import { isValidUrl } from "./utils";
+import { isValidUrl, getCurrentTab } from "./utils";
 
 import { GameData } from "./types";
 
@@ -15,11 +15,7 @@ const Popup = () => {
   useEffect(() => {
     const checkValidUrl = async () => {
       try {
-        const [tab] = await chrome.tabs.query({
-          active: true,
-          currentWindow: true,
-        });
-
+        const tab = await getCurrentTab();
         const valid: boolean = !!tab.url && isValidUrl(tab.url);
 
         if (valid) {
