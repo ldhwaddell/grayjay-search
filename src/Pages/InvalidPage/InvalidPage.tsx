@@ -3,7 +3,7 @@ import Header from "../../Components/Header/Header";
 
 const InvalidPage = () => {
   return (
-    <>
+    <div className="container">
       <Header />
       <div className="message-container">
         <p className="text">
@@ -31,7 +31,7 @@ const InvalidPage = () => {
         src="./assets/page-hint.png"
         alt="Visual example of the 'All Games' option being selected"
       />
-    </>
+    </div>
   );
 };
 
