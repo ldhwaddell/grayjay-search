@@ -40,14 +40,14 @@ const SearchPage = ({ games }: Props) => {
 
   const handleQueryChange = (
     type: "referee" | "linesman",
-    field: keyof RefereeQuery | keyof LinesmanQuery,
+    key: keyof RefereeQuery | keyof LinesmanQuery,
     value: string | null
   ) => {
     setQuery((prevQuery) => ({
       ...prevQuery,
       [type]: {
         ...prevQuery[type],
-        [field]: value,
+        [key]: value,
       },
     }));
   };
@@ -60,11 +60,10 @@ const SearchPage = ({ games }: Props) => {
     handleQueryChange(type, official, name);
   };
 
-  const handleToggleChange = (
-    official: "referee" | "linesman",
-    condition: Condition
-  ) => {
-    const toggle: Condition = condition === "AND" ? "OR" : "AND";
+  const handleToggleChange = (official: "referee" | "linesman") => {
+    const toggle: Condition =
+      query[official].condition === "AND" ? "OR" : "AND";
+
     handleQueryChange(official, "condition", toggle);
   };
 
@@ -100,11 +99,7 @@ const SearchPage = ({ games }: Props) => {
           handleOfficialChange={handleOfficialChange}
         />
 
-        <Toggle
-          handleClick={() =>
-            handleToggleChange("referee", query.referee.condition)
-          }
-        />
+        <Toggle handleClick={() => handleToggleChange("referee")} />
       </div>
 
       <SearchBar
@@ -122,11 +117,7 @@ const SearchPage = ({ games }: Props) => {
           placeHolder="Linesman #1"
           handleOfficialChange={handleOfficialChange}
         />
-        <Toggle
-          handleClick={() =>
-            handleToggleChange("linesman", query.linesman.condition)
-          }
-        />
+        <Toggle handleClick={() => handleToggleChange("linesman")} />
       </div>
       <SearchBar
         games={games}
