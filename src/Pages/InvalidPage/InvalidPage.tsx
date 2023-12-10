@@ -3,15 +3,15 @@ import Header from "../../Components/Header/Header";
 
 const InvalidPage = () => {
   return (
-    <div className="container">
+    <div className="message-container">
       <Header />
-      <div className="message-container">
+      <div className="message">
         <p className="text">
           This extension only works on the GrayJay Officials Games page!{" "}
         </p>
       </div>
 
-      <div className="message-container">
+      <div className="message">
         <p className="text">
           Navigate{" "}
           <a
