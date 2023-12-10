@@ -47,7 +47,7 @@ const OfficialSearch = ({
           handleOfficialChange={handleOfficialChange}
         />
 
-        <Toggle isAnd={isAnd} handleToggleChange={handleToggleChange} />
+        {/* <Toggle isAnd={isAnd} handleToggleChange={handleToggleChange} /> */}
       </div>
 
       <div className="search-bar-secondary">

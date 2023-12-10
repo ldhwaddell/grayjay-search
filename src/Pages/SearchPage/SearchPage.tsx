@@ -1,9 +1,9 @@
 import { useState } from "react";
 
 import Header from "../../Components/Header/Header";
-import OfficialSearch from "../../Components/OfficialSearch/OfficialSearch";
 import RadioButton from "../../Components/RadioButton/RadioButton";
 import SearchBar from "../../Components/SearchBar/SearchBar";
+import Toggle from "../../Components/Toggle/Toggle";
 
 import "./SearchPage.css";
 
@@ -25,12 +25,12 @@ const SearchPage = ({ games }: Props) => {
     referee: {
       referee1: null,
       referee2: null,
-      condition: "OR",
+      condition: "AND",
     },
     linesman: {
       linesman1: null,
       linesman2: null,
-      condition: "OR",
+      condition: "AND",
     },
     matches: "Highlight",
   });
@@ -57,11 +57,13 @@ const SearchPage = ({ games }: Props) => {
     handleQueryChange(type, official, name);
   };
 
-  const handleConditionChange = (official: Official, condition: Condition) => {
-    const type: "referee" | "linesman" = official.startsWith("linesman")
-      ? "linesman"
-      : "referee";
-    handleQueryChange(type, "condition", condition);
+  const handleToggleChange = (
+    official: "referee" | "linesman",
+    condition: Condition
+  ) => {
+
+    const toggle: Condition = condition === "AND" ? "OR" : "AND";
+    handleQueryChange(official, "condition", toggle);
   };
 
   const handleMatchChange = (match: string) => {
@@ -77,12 +79,20 @@ const SearchPage = ({ games }: Props) => {
     <div className="container">
       <Header />
 
-      <SearchBar
-        games={games}
-        type="referee1"
-        placeHolder="Referee #1"
-        handleOfficialChange={handleOfficialChange}
-      />
+      <div className="search-with-toggle">
+        <SearchBar
+          games={games}
+          type="referee1"
+          placeHolder="Referee #1"
+          handleOfficialChange={handleOfficialChange}
+        />
+
+        <Toggle
+          handleClick={() =>
+            handleToggleChange("referee", query.referee.condition)
+          }
+        />
+      </div>
 
       <SearchBar
         games={games}
@@ -91,13 +101,19 @@ const SearchPage = ({ games }: Props) => {
         handleOfficialChange={handleOfficialChange}
       />
 
-      <SearchBar
-        games={games}
-        type="linesman1"
-        placeHolder="Linesman #2"
-        handleOfficialChange={handleOfficialChange}
-      />
-
+      {/* Find better way */}
+      {/* <div className="search-with-toggle" style={{ marginTop: -10 }}>
+        <SearchBar
+          games={games}
+          type="linesman1"
+          placeHolder="Linesman #1"
+          handleOfficialChange={handleOfficialChange}
+        />
+        <Toggle
+          isAnd={isLinesmanAnd}
+          handleToggleChange={handleLinesmanToggleChange}
+        />
+      </div> */}
       <SearchBar
         games={games}
         type="linesman2"

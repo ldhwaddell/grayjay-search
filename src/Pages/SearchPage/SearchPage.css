@@ -6,6 +6,15 @@
   z-index: 1;
 }
 
+.search-with-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 12px;
+  /* Find better way */
+  margin-bottom: -10px;
+}
+
 .radio-button-container {
   background-color: white;
   border-radius: 4px;

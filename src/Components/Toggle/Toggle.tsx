@@ -1,18 +1,13 @@
 import "./Toggle.css";
 
 interface Props {
-  isAnd: boolean;
-  handleToggleChange: (isAnd: boolean) => void;
+  handleClick: any;
 }
 
-const Toggle = ({ isAnd, handleToggleChange }: Props) => {
+const Toggle = ({ handleClick }: Props) => {
   return (
     <div className="toggle-button-cover">
-      <div
-        className="button"
-        id="button"
-        onClick={() => handleToggleChange(!isAnd)}
-      >
+      <div className="button" id="button" onClick={handleClick}>
         <input type="checkbox" className="checkbox" />
         <div className="knobs">
           <span>AND</span>
