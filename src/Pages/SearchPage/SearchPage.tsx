@@ -3,6 +3,7 @@ import { useState } from "react";
 import Header from "../../Components/Header/Header";
 import OfficialSearch from "../../Components/OfficialSearch/OfficialSearch";
 import RadioButton from "../../Components/RadioButton/RadioButton";
+import SearchBar from "../../Components/SearchBar/SearchBar";
 
 import "./SearchPage.css";
 
@@ -72,29 +73,37 @@ const SearchPage = ({ games }: Props) => {
 
   console.log(`QUERY: ${JSON.stringify(query)}`);
 
-  // SEND MESSAGE WITH QUERY AND OUTPUT OPTION
-
   return (
-    <>
+    <div className="container">
       <Header />
 
-      <OfficialSearch
+      <SearchBar
         games={games}
-        primarySearchBar={{ type: "referee1", placeHolder: "Referee #1" }}
-        secondarySearchBar={{ type: "referee2", placeHolder: "Referee #2" }}
+        type="referee1"
+        placeHolder="Referee #1"
         handleOfficialChange={handleOfficialChange}
-        handleConditionChange={handleConditionChange}
       />
-      {/* <OfficialSearch
+
+      <SearchBar
         games={games}
-        primarySearchBar={{ type: "linesman1", placeHolder: "Linesman #1" }}
-        secondarySearchBar={{
-          type: "linesman2",
-          placeHolder: "Linesman #2",
-        }}
+        type="referee2"
+        placeHolder="Referee #2"
         handleOfficialChange={handleOfficialChange}
-        handleConditionChange={handleConditionChange}
-      /> */}
+      />
+
+      <SearchBar
+        games={games}
+        type="linesman1"
+        placeHolder="Linesman #2"
+        handleOfficialChange={handleOfficialChange}
+      />
+
+      <SearchBar
+        games={games}
+        type="linesman2"
+        placeHolder="Linesman #2"
+        handleOfficialChange={handleOfficialChange}
+      />
 
       <div className="radio-button-container">
         <RadioButton
@@ -111,7 +120,7 @@ const SearchPage = ({ games }: Props) => {
           onChange={() => handleMatchChange("Display")}
         />
       </div>
-    </>
+    </div>
   );
 };
 
