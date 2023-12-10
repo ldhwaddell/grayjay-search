@@ -1,12 +1,8 @@
-// Define types for your messages and responses
-type ProcessLinksMessage = {
-  type: "PROCESS_LINKS";
-  links: string[];
-};
-
-type ErrorScrapingLinksMessage = {
-  type: "ERROR_SCRAPING_LINKS";
-};
+import {
+  ErrorScrapingLinksMessage,
+  ProcessLinksMessage,
+  QueryChangeMessage,
+} from "./types";
 
 const scrapeLinks = (retries = 3, delayMs: number = 1000) => {
   try {
@@ -40,6 +36,21 @@ const scrapeLinks = (retries = 3, delayMs: number = 1000) => {
 // Content does not update frequently
 // scraping on page load should provide recent enough content
 window.addEventListener("load", () => scrapeLinks());
+
+// Handle when popupsends message asking to update query results
+chrome.runtime.onMessage.addListener(
+  (
+    message: QueryChangeMessage,
+    _: chrome.runtime.MessageSender,
+    sendResponse: (response: any) => void
+  ) => {
+    switch (message.type) {
+      case "QUERY_CHANGE":
+        console.log(message.query);
+        break;
+    }
+  }
+);
 
 export {};
 
