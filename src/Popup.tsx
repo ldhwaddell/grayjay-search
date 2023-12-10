@@ -10,7 +10,7 @@ import { GameData } from "./types";
 
 const Popup = () => {
   const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
-  const [gameData, setGameData] = useState<GameData[]>([]);
+  const [games, setGames] = useState<GameData[]>([]);
 
   useEffect(() => {
     const checkValidUrl = async () => {
@@ -24,7 +24,7 @@ const Popup = () => {
 
         if (valid) {
           const games: GameData[] = await Cache.get();
-          setGameData(games);
+          setGames(games);
         }
 
         setOnValidPage(valid);
@@ -42,7 +42,7 @@ const Popup = () => {
     return <InvalidPage />;
   }
 
-  return <>{onValidPage ? <SearchPage games={gameData} /> : <InvalidPage />}</>;
+  return <>{onValidPage ? <SearchPage games={games} /> : <InvalidPage />}</>;
 };
 
 export default Popup;
