@@ -5,7 +5,7 @@ import RadioButton from "../../Components/RadioButton/RadioButton";
 import SearchBar from "../../Components/SearchBar/SearchBar";
 import Toggle from "../../Components/Toggle/Toggle";
 
-import { getCurrentTab, isQueryNull } from "../../utils";
+import { getCurrentTab } from "../../utils";
 
 import "./SearchPage.css";
 
@@ -83,9 +83,6 @@ const SearchPage = ({ games }: Props) => {
         chrome.tabs.sendMessage(tab.id, message);
       }
     };
-
-    // Don't send message if fields are null
-    if (isQueryNull(query)) return;
 
     sendMessage(query);
   }, [query]);
