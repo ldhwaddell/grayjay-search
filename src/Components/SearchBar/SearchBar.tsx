@@ -8,7 +8,7 @@ interface Props {
   games: GameData[];
   type: Official;
   placeHolder: string;
-  handleOfficialChange: (official: Official, name: string) => void;
+  handleOfficialChange: (official: Official, name: string | null) => void;
 }
 
 const SearchBar = ({
@@ -60,6 +60,11 @@ const SearchBar = ({
     setSuggestions([]);
   };
 
+  const resetQuery = () => {
+    setText("");
+    handleOfficialChange(type, null);
+  };
+
   return (
     <div className="search-wrapper">
       <input
@@ -74,7 +79,7 @@ const SearchBar = ({
           }, 100);
         }}
       />
-      <i className="search-clear-icon" onClick={() => setText("")}></i>
+      <i className="search-clear-icon" onClick={() => resetQuery()}></i>
 
       {suggestions.length > 0 && (
         <div className="suggestions-container">
