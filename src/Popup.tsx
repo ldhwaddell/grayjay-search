@@ -9,7 +9,7 @@ import { isValidUrl, getCurrentTab } from "./utils";
 import { GameData } from "./types";
 
 const Popup = () => {
-  const [onValidPage, setOnValidPage] = useState<boolean | null>(null);
+  const [onValidPage, setOnValidPage] = useState<boolean>(false);
   const [games, setGames] = useState<GameData[]>([]);
 
   useEffect(() => {
@@ -21,24 +21,17 @@ const Popup = () => {
         if (valid) {
           const games: GameData[] = await Cache.get();
           setGames(games);
+          setOnValidPage(valid);
         }
-
-        setOnValidPage(valid);
       } catch (error) {
         console.error("Error:", JSON.stringify(error));
-        setOnValidPage(false);
       }
     };
 
     checkValidUrl();
   }, []);
 
-  // If page has not yet been verified, show invalid page
-  if (onValidPage === null) {
-    return <InvalidPage />;
-  }
-
-  return <>{onValidPage ? <SearchPage games={games} /> : <InvalidPage />}</>;
+  return <> {onValidPage ? <SearchPage games={games} /> : <InvalidPage />} </>;
 };
 
 export default Popup;
