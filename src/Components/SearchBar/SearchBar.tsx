@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import "./SearchBar.css";
 
@@ -6,6 +6,7 @@ import { GameData, Official } from "../../types";
 
 interface Props {
   games: GameData[];
+  queryText: string;
   type: Official;
   placeHolder: string;
   handleOfficialChange: (official: Official, name: string | null) => void;
@@ -13,12 +14,17 @@ interface Props {
 
 const SearchBar = ({
   games,
+  queryText,
   type,
   placeHolder,
   handleOfficialChange,
 }: Props) => {
-  const [text, setText] = useState<string>("");
+  const [text, setText] = useState<string>(queryText);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    setText(queryText);
+  }, [queryText]);
 
   const onChangeHandler = (text: string) => {
     if (text.length > 0) {
