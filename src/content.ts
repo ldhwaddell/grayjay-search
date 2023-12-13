@@ -4,6 +4,7 @@ import {
   ProcessLinksMessage,
   Query,
   QueryChangeMessage,
+  Condition,
 } from "./types";
 
 import { Cache } from "./Cache";
@@ -41,47 +42,42 @@ const scrapeLinks = (retries = 3, delayMs: number = 1000) => {
   }
 };
 
+const matchCondition = (
+  query1: string,
+  query2: string,
+  game1: string,
+  game2: string,
+  condition: Condition
+): boolean => {
+  return query1 === ""
+    ? query2 === game2
+    : query2 === ""
+    ? query1 === game1
+    : condition === "AND"
+    ? query1 === game1 && query2 === game2
+    : query1 === game1 || query2 === game2;
+};
+
 const matchesQuery = (query: Query, game: GameData) => {
-  // Needs a total revamp
-  const { referee: queryReferee, linesman: queryLinesman } = query;
+  const { referee, linesman } = query;
 
-  const {
-    referee1: queryReferee1,
-    referee2: queryReferee2,
-    condition: refereeCondition,
-  } = queryReferee;
+  const refereeMatch = matchCondition(
+    referee.referee1,
+    referee.referee2,
+    game.referee1,
+    game.referee2,
+    referee.condition
+  );
 
-  const {
-    linesman1: queryLinesman1,
-    linesman2: queryLinesman2,
-    condition: linesmanCondition,
-  } = queryLinesman;
+  const linesmanMatch = matchCondition(
+    linesman.linesman1,
+    linesman.linesman2,
+    game.linesman1,
+    game.linesman2,
+    linesman.condition
+  );
 
-  let refereeMatch, linesmanMatch;
-
-  if (queryReferee1 === null) {
-    refereeMatch = queryReferee2 === game.referee2;
-  } else if (queryReferee2 === null) {
-    refereeMatch = queryReferee1 === game.referee1;
-  } else {
-    refereeMatch =
-      refereeCondition === "AND"
-        ? queryReferee1 === game.referee1 && queryReferee2 === game.referee2
-        : queryReferee1 === game.referee1 || queryReferee2 === game.referee2;
-  }
-
-  if (queryLinesman1 === null) {
-    linesmanMatch = queryLinesman2 === game.linesman2;
-  } else {
-    linesmanMatch =
-      linesmanCondition === "AND"
-        ? queryLinesman1 === game.linesman1 && queryLinesman2 === game.linesman2
-        : queryLinesman1 === game.linesman1 ||
-          queryLinesman2 === game.linesman2;
-  }
-
-  // return refereeMatch && linesmanMatch;
-  return refereeMatch;
+  return refereeMatch || linesmanMatch;
 };
 
 const showMatches = (query: Query, cachedGames: GameData[]): void => {
@@ -98,6 +94,7 @@ const showMatches = (query: Query, cachedGames: GameData[]): void => {
   );
 
   if (matches.size === 0) {
+    console.log("no matches");
     const firstGameDiv = gameDivs[0];
     const clone = firstGameDiv.cloneNode(true) as HTMLElement;
 
@@ -109,7 +106,7 @@ const showMatches = (query: Query, cachedGames: GameData[]): void => {
     //   clone,
     //   firstGameDiv.parentNode.firstChild
     // );
-    return;
+    // return;
   }
 
   gameDivs.forEach((div) => {
@@ -133,15 +130,26 @@ const display = (matchType: string, div: HTMLElement, match: boolean): void => {
 const showAllGames = () => {
   const gameDivs = scrapeGameDivs();
 
+  // Clear "no matches found" div here
   gameDivs.forEach((div) => {
     div.style.display = "block";
     div.style.border = "0";
   });
 };
 
-// Content does not update frequently
-// scraping on page load should provide recent enough content
-window.addEventListener("load", () => scrapeLinks());
+const handleQueryChange = async () => {
+  const query = await Cache.getQuery();
+  // Clear any previous searches if query is null
+  if (isQueryNull(query)) {
+    console.log("NULL");
+    showAllGames();
+    return;
+  }
+
+  const games = await Cache.get();
+  showAllGames();
+  showMatches(query, games);
+};
 
 // Handle when popupsends message asking to update query results
 chrome.runtime.onMessage.addListener(
@@ -152,31 +160,14 @@ chrome.runtime.onMessage.addListener(
   ) => {
     switch (message.type) {
       case "QUERY_CHANGE":
-        const { query } = message;
-
-        // Clear any prev searches if query is null, don't bother accessing cache
-        if (isQueryNull(query)) {
-          showAllGames();
-          break;
-        }
-
-        Cache.get().then((games) => {
-          // Clear previous matches before showing query results
-          showAllGames();
-          showMatches(query, games);
-        });
-
+        handleQueryChange();
         break;
     }
   }
 );
 
-export {};
+// Content does not update frequently
+// scraping on page load should provide recent enough content
+window.addEventListener("load", () => scrapeLinks());
 
-// ADD LITTLE REF LOGOS TO EACH GAME WITH WHOS ON IT
-// CREATE READ ME
-// COMMENT ALL CODE
-// ADD LOGIC TO SHOW MATCHES
-// FIX WEIRD ORPHAN CONTENT SCRIPT ISSUE (REINJECT?)
-// FIX CSS (HELL)
-//
+export {};

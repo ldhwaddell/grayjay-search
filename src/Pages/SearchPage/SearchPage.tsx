@@ -4,7 +4,9 @@ import Header from "../../Components/Header/Header";
 import RadioButton from "../../Components/RadioButton/RadioButton";
 import SearchBar from "../../Components/SearchBar/SearchBar";
 import Toggle from "../../Components/Toggle/Toggle";
+import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton";
 
+import { Cache } from "../../Cache";
 import { getCurrentTab } from "../../utils";
 
 import "./SearchPage.css";
@@ -12,6 +14,7 @@ import "./SearchPage.css";
 import {
   GameData,
   Query,
+  defaultQuery,
   RefereeQuery,
   LinesmanQuery,
   Official,
@@ -24,24 +27,31 @@ interface Props {
 }
 
 const SearchPage = ({ games }: Props) => {
-  const [query, setQuery] = useState<Query>({
-    referee: {
-      referee1: null,
-      referee2: null,
-      condition: "AND",
-    },
-    linesman: {
-      linesman1: null,
-      linesman2: null,
-      condition: "AND",
-    },
-    matches: "Highlight",
-  });
+  const [query, setQuery] = useState<Query>(
+    JSON.parse(JSON.stringify(defaultQuery))
+  );
+
+  useEffect(() => {
+    const fetchQuery = async () => {
+      try {
+        const queryData: Query = await Cache.getQuery();
+        // Only update query if one already exists
+        if (Object.keys(queryData).length !== 0) {
+          setQuery(queryData);
+        }
+        
+      } catch (error) {
+        console.error("Error fetching query data:", error);
+      }
+    };
+
+    fetchQuery();
+  }, []);
 
   const handleQueryChange = (
     type: "referee" | "linesman",
     key: keyof RefereeQuery | keyof LinesmanQuery,
-    value: string | null
+    value: string
   ) => {
     setQuery((prevQuery) => ({
       ...prevQuery,
@@ -52,7 +62,7 @@ const SearchPage = ({ games }: Props) => {
     }));
   };
 
-  const handleOfficialChange = (official: Official, name: string | null) => {
+  const handleOfficialChange = (official: Official, name: string) => {
     const type: "referee" | "linesman" = official.startsWith("linesman")
       ? "linesman"
       : "referee";
@@ -75,16 +85,19 @@ const SearchPage = ({ games }: Props) => {
   };
 
   useEffect(() => {
-    const sendMessage = async (query: Query) => {
+    const sendMessage = async () => {
+      // Update query in cache
+      await Cache.updateQuery(query);
+      // Then send message
       const tab = await getCurrentTab();
 
       if (tab.id) {
-        const message: QueryChangeMessage = { type: "QUERY_CHANGE", query };
+        const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
         chrome.tabs.sendMessage(tab.id, message);
       }
     };
 
-    sendMessage(query);
+    sendMessage();
   }, [query]);
 
   return (
@@ -94,6 +107,7 @@ const SearchPage = ({ games }: Props) => {
       <div className="search-with-toggle">
         <SearchBar
           games={games}
+          queryText={query.referee.referee1}
           type="referee1"
           placeHolder="Referee #1"
           handleOfficialChange={handleOfficialChange}
@@ -104,6 +118,7 @@ const SearchPage = ({ games }: Props) => {
 
       <SearchBar
         games={games}
+        queryText={query.referee.referee2}
         type="referee2"
         placeHolder="Referee #2"
         handleOfficialChange={handleOfficialChange}
@@ -113,6 +128,7 @@ const SearchPage = ({ games }: Props) => {
       <div className="search-with-toggle" style={{ marginTop: -10 }}>
         <SearchBar
           games={games}
+          queryText={query.linesman.linesman1}
           type="linesman1"
           placeHolder="Linesman #1"
           handleOfficialChange={handleOfficialChange}
@@ -121,10 +137,18 @@ const SearchPage = ({ games }: Props) => {
       </div>
       <SearchBar
         games={games}
+        queryText={query.linesman.linesman2}
         type="linesman2"
         placeHolder="Linesman #2"
         handleOfficialChange={handleOfficialChange}
       />
+
+      {/* <ResetQueryButton
+        onClick={() => {
+          console.log("CLICK")
+          setQuery(JSON.parse(JSON.stringify(defaultQuery)));
+        }}
+      /> */}
 
       <div className="radio-button-container">
         <RadioButton

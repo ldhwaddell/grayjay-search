@@ -9,7 +9,7 @@ interface Props {
   queryText: string;
   type: Official;
   placeHolder: string;
-  handleOfficialChange: (official: Official, name: string | null) => void;
+  handleOfficialChange: (official: Official, name: string) => void;
 }
 
 const SearchBar = ({
@@ -68,7 +68,7 @@ const SearchBar = ({
 
   const resetQuery = () => {
     setText("");
-    handleOfficialChange(type, null);
+    handleOfficialChange(type, "");
   };
 
   return (
