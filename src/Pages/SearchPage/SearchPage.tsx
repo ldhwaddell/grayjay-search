@@ -7,7 +7,7 @@ import Toggle from "../../Components/Toggle/Toggle";
 import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton";
 
 import { Cache } from "../../Cache";
-import { getCurrentTab } from "../../utils";
+import { getCurrentTab, isQueryNull } from "../../utils";
 
 import "./SearchPage.css";
 
@@ -39,7 +39,6 @@ const SearchPage = ({ games }: Props) => {
         if (Object.keys(queryData).length !== 0) {
           setQuery(queryData);
         }
-        
       } catch (error) {
         console.error("Error fetching query data:", error);
       }
@@ -47,6 +46,22 @@ const SearchPage = ({ games }: Props) => {
 
     fetchQuery();
   }, []);
+
+  useEffect(() => {
+    const sendMessage = async () => {
+      // Update query in cache
+      await Cache.updateQuery(query);
+      // Then send message
+      const tab = await getCurrentTab();
+
+      if (tab.id) {
+        const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
+        chrome.tabs.sendMessage(tab.id, message);
+      }
+    };
+
+    sendMessage();
+  }, [query]);
 
   const handleQueryChange = (
     type: "referee" | "linesman",
@@ -60,6 +75,12 @@ const SearchPage = ({ games }: Props) => {
         [key]: value,
       },
     }));
+  };
+
+  const handleQueryReset = () => {
+    if (!isQueryNull(query)) {
+      setQuery(JSON.parse(JSON.stringify(defaultQuery)));
+    }
   };
 
   const handleOfficialChange = (official: Official, name: string) => {
@@ -83,22 +104,6 @@ const SearchPage = ({ games }: Props) => {
       matches: match,
     }));
   };
-
-  useEffect(() => {
-    const sendMessage = async () => {
-      // Update query in cache
-      await Cache.updateQuery(query);
-      // Then send message
-      const tab = await getCurrentTab();
-
-      if (tab.id) {
-        const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
-        chrome.tabs.sendMessage(tab.id, message);
-      }
-    };
-
-    sendMessage();
-  }, [query]);
 
   return (
     <div className="container">
@@ -143,27 +148,23 @@ const SearchPage = ({ games }: Props) => {
         handleOfficialChange={handleOfficialChange}
       />
 
-      {/* <ResetQueryButton
-        onClick={() => {
-          console.log("CLICK")
-          setQuery(JSON.parse(JSON.stringify(defaultQuery)));
-        }}
-      /> */}
+      <div className="controls-container">
+        <div className="radio-button-container">
+          <RadioButton
+            text="Highlight"
+            tooltipText="Highlight games that match your search"
+            checked={query.matches === "Highlight"}
+            onChange={() => handleMatchChange("Highlight")}
+          />
 
-      <div className="radio-button-container">
-        <RadioButton
-          text="Highlight"
-          tooltipText="Highlight games that match your search"
-          checked={query.matches === "Highlight"}
-          onChange={() => handleMatchChange("Highlight")}
-        />
-
-        <RadioButton
-          text="Display"
-          tooltipText="Only display games that match your search"
-          checked={query.matches === "Display"}
-          onChange={() => handleMatchChange("Display")}
-        />
+          <RadioButton
+            text="Display"
+            tooltipText="Only display games that match your search"
+            checked={query.matches === "Display"}
+            onChange={() => handleMatchChange("Display")}
+          />
+        </div>
+        <ResetQueryButton onClick={() => handleQueryReset()} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import "./ResetQueryButton.css";
 
 interface Props {
-  onClick?: () => void;
+  onClick: () => void;
 }
 
 const AddButton = ({ onClick }: Props) => {

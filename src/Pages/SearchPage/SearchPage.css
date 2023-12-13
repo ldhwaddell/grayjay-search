@@ -25,3 +25,9 @@
   justify-content: center;
   gap: 10px;
 }
+
+.controls-container {
+  margin-top: -10px;
+  display: flex;
+  align-items: center;
+}
