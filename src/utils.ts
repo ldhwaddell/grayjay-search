@@ -16,14 +16,14 @@ export const getCurrentTab = async (): Promise<chrome.tabs.Tab> => {
 };
 
 export const isQueryNull = (query: Query): boolean => {
-  // Strictly check if referee1 and referee2 are null
+  // Strictly check if referee1 and referee2 are ""
   const areRefereesNull =
-    query.referee.referee1 === null && query.referee.referee2 === null;
+    query.referee.referee1 === "" && query.referee.referee2 === "";
 
-  // Strictly check if linesman1 and linesman2 are null
+  // Strictly check if linesman1 and linesman2 are ""
   const areLinesmenNull =
-    query.linesman.linesman1 === null && query.linesman.linesman2 === null;
+    query.linesman.linesman1 === "" && query.linesman.linesman2 === "";
 
-  // Return true if all are strictly null, false otherwise
+  // Return true if all are strictly "", false otherwise
   return areRefereesNull && areLinesmenNull;
 };
