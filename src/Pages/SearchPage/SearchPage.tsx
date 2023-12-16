@@ -8,6 +8,7 @@ import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton
 
 import { Cache } from "../../Cache";
 import { getCurrentTab } from "../../utils";
+import useDeepCompareEffect from "use-deep-compare-effect";
 
 import "./SearchPage.css";
 
@@ -44,7 +45,7 @@ const SearchPage = ({ games }: Props) => {
     fetchQuery();
   }, []);
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const sendMessage = async () => {
       // Update query in cache
       await Cache.updateQuery(query);
