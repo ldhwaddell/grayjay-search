@@ -27,9 +27,7 @@ const SearchBar = ({
   }, [queryText]);
 
   const onChangeHandler = (text: string) => {
-    if (text.length > 0) {
-      // Safeguard against no games
-      if (!games || !games.length) return;
+    if (text.length > 0 && games.length) {
       const regex = new RegExp(text, "gi");
 
       const matches = games.reduce((acc: Set<string>, game: GameData) => {
