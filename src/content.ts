@@ -4,7 +4,6 @@ import {
   ProcessLinksMessage,
   Query,
   QueryChangeMessage,
-  Condition,
 } from "./types";
 
 import { Cache } from "./Cache";
@@ -47,13 +46,13 @@ const matchCondition = (
   query2: string,
   game1: string,
   game2: string,
-  condition: Condition
+  condition: boolean
 ): boolean => {
   return query1 === ""
     ? query2 === game2
     : query2 === ""
     ? query1 === game1
-    : condition === "AND"
+    : condition
     ? query1 === game1 && query2 === game2
     : query1 === game1 || query2 === game2;
 };
@@ -94,19 +93,15 @@ const showMatches = (query: Query, cachedGames: GameData[]): void => {
   );
 
   if (matches.size === 0) {
-    console.log("no matches");
     const firstGameDiv = gameDivs[0];
     const clone = firstGameDiv.cloneNode(true) as HTMLElement;
 
-    // Modify the clone to display "no matches"
-    clone.style.border = "5px solid orange";
+    // Find the game-card element within the clone
+    //const gameCard = clone.querySelector(".game-card");
 
-    // Insert the clone at the beginning of the parent container
-    // firstGameDiv.parentNode?.insertBefore(
-    //   clone,
-    //   firstGameDiv.parentNode.firstChild
-    // );
-    // return;
+    // Append the modified clone to the DOM, adjust the location as needed
+    // For example, appending to the container of the gameDivs
+    //firstGameDiv.parentNode?.insertBefore(clone, firstGameDiv);
   }
 
   gameDivs.forEach((div) => {
@@ -131,6 +126,7 @@ const showAllGames = () => {
   const gameDivs = scrapeGameDivs();
 
   // Clear "no matches found" div here
+
   gameDivs.forEach((div) => {
     div.style.display = "block";
     div.style.border = "0";
