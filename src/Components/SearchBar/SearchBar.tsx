@@ -28,6 +28,8 @@ const SearchBar = ({
 
   const onChangeHandler = (text: string) => {
     if (text.length > 0) {
+      // Safeguard against no games
+      if (!games || !games.length) return;
       const regex = new RegExp(text, "gi");
 
       const matches = games.reduce((acc: Set<string>, game: GameData) => {
@@ -85,7 +87,12 @@ const SearchBar = ({
           }, 100);
         }}
       />
-      <i className="search-clear-icon" onClick={() => resetQuery()}></i>
+      <img
+        src="./assets/x.png"
+        alt="X icon"
+        className="search-clear-icon"
+        onClick={() => resetQuery()}
+      />
 
       {suggestions.length > 0 && (
         <div className="suggestions-container">
