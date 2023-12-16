@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import Header from "../../Components/Header/Header";
 import RadioButton from "../../Components/RadioButton/RadioButton";
 import SearchBar from "../../Components/SearchBar/SearchBar";
-import Toggle from "../../Components/Toggle/Toggle";
+import ToggleConditionButton from "../../Components/ToggleConditionButton/ToggleConditionButton";
 import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton";
 
 import { Cache } from "../../Cache";
-import { getCurrentTab, isQueryNull } from "../../utils";
+import { getCurrentTab } from "../../utils";
 
 import "./SearchPage.css";
 
@@ -15,10 +15,7 @@ import {
   GameData,
   Query,
   defaultQuery,
-  RefereeQuery,
-  LinesmanQuery,
   Official,
-  Condition,
   QueryChangeMessage,
 } from "../../types";
 
@@ -63,24 +60,8 @@ const SearchPage = ({ games }: Props) => {
     sendMessage();
   }, [query]);
 
-  const handleQueryChange = (
-    type: "referee" | "linesman",
-    key: keyof RefereeQuery | keyof LinesmanQuery,
-    value: string
-  ) => {
-    setQuery((prevQuery) => ({
-      ...prevQuery,
-      [type]: {
-        ...prevQuery[type],
-        [key]: value,
-      },
-    }));
-  };
-
   const handleQueryReset = () => {
-    if (!isQueryNull(query)) {
-      setQuery(JSON.parse(JSON.stringify(defaultQuery)));
-    }
+    setQuery(JSON.parse(JSON.stringify(defaultQuery)));
   };
 
   const handleOfficialChange = (official: Official, name: string) => {
@@ -88,14 +69,23 @@ const SearchPage = ({ games }: Props) => {
       ? "linesman"
       : "referee";
 
-    handleQueryChange(type, official, name);
+    setQuery((prevQuery) => ({
+      ...prevQuery,
+      [type]: {
+        ...prevQuery[type],
+        [official]: name,
+      },
+    }));
   };
 
   const handleToggleChange = (official: "referee" | "linesman") => {
-    const toggle: Condition =
-      query[official].condition === "AND" ? "OR" : "AND";
-
-    handleQueryChange(official, "condition", toggle);
+    setQuery((prevQuery) => ({
+      ...prevQuery,
+      [official]: {
+        ...prevQuery[official],
+        condition: !query[official].condition,
+      },
+    }));
   };
 
   const handleMatchChange = (match: string) => {
@@ -118,7 +108,10 @@ const SearchPage = ({ games }: Props) => {
           handleOfficialChange={handleOfficialChange}
         />
 
-        <Toggle handleClick={() => handleToggleChange("referee")} />
+        <ToggleConditionButton
+          isAnd={query.referee.condition}
+          handleClick={() => handleToggleChange("referee")}
+        />
       </div>
 
       <SearchBar
@@ -138,7 +131,10 @@ const SearchPage = ({ games }: Props) => {
           placeHolder="Linesman #1"
           handleOfficialChange={handleOfficialChange}
         />
-        <Toggle handleClick={() => handleToggleChange("linesman")} />
+        <ToggleConditionButton
+          isAnd={query.linesman.condition}
+          handleClick={() => handleToggleChange("linesman")}
+        />
       </div>
       <SearchBar
         games={games}
