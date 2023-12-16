@@ -1,0 +1,80 @@
+/* Taken from: https://www.joshwcomeau.com/animation/3d-button/#started-from-the-button-now-we-here-9 */
+
+.toggle-pushable {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  outline-offset: 4px;
+  transition: filter 250ms;
+  width: 100px;
+  height: 44px;
+  transition: width 0.3s ease-out;
+}
+
+.toggle-edge-red {
+  background: linear-gradient(
+    to left,
+    hsl(4, 94%, 26%) 0%,
+    hsl(4, 77%, 39%) 8%,
+    hsl(4, 77%, 39%) 92%,
+    hsl(4, 94%, 26%) 100%
+  );
+}
+
+.toggle-edge-blue {
+  background: linear-gradient(
+    to left,
+    hsl(214deg 84.2% 27.3%) 0%,
+    hsl(214, 74%, 39%) 8%,
+    hsl(214deg 74% 39%) 92%,
+    hsl(214deg 84.2% 27.3%) 100%
+  );
+}
+
+.toggle-edge {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 92%;
+  border-radius: 4px;
+}
+
+.toggle-front-red {
+  background: #f44336;
+}
+
+.toggle-front-blue {
+  background: hsl(214deg 78.1% 53.5%);
+}
+
+.toggle-front {
+  display: block;
+  position: relative;
+  padding: 10px 5px 10px 5px;
+  height: 40px;
+  border-radius: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 21px;
+  color: white;
+  will-change: transform;
+  transform: translateY(-2px);
+  transition: transform 600ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  box-sizing: border-box;
+}
+
+.toggle-pushable:hover {
+  filter: brightness(110%);
+}
+.toggle-pushable:hover .toggle-front {
+  transform: translateY(-5px);
+  transition: transform 250ms cubic-bezier(0.3, 0.7, 0.4, 1.5);
+}
+.toggle-pushable:active .toggle-front {
+  transform: translateY(-2px);
+  transition: transform 34ms;
+}
