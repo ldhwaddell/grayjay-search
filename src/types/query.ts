@@ -1,15 +1,13 @@
-export type Condition = "AND" | "OR";
-
 export interface RefereeQuery {
   referee1: string;
   referee2: string;
-  condition: Condition;
+  condition: boolean;
 }
 
 export interface LinesmanQuery {
   linesman1: string;
   linesman2: string;
-  condition: Condition;
+  condition: boolean;
 }
 
 export interface Query {
@@ -22,12 +20,12 @@ export const defaultQuery: Query = {
   referee: {
     referee1: "",
     referee2: "",
-    condition: "AND",
+    condition: true,
   },
   linesman: {
     linesman1: "",
     linesman2: "",
-    condition: "AND",
+    condition: true,
   },
   matches: "Highlight",
 };
