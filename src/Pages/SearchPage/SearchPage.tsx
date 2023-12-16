@@ -45,6 +45,9 @@ const SearchPage = ({ games }: Props) => {
     fetchQuery();
   }, []);
 
+  // Make sure this does not trigger twice
+  // once when query state is set
+  // another time when query is updated from cache
   useDeepCompareEffect(() => {
     const sendMessage = async () => {
       // Update query in cache

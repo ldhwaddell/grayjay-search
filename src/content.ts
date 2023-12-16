@@ -137,7 +137,6 @@ const handleQueryChange = async () => {
   const query = await Cache.getQuery();
   // Clear any previous searches if query is null
   if (isQueryNull(query)) {
-    console.log("NULL");
     showAllGames();
     return;
   }

@@ -164,7 +164,6 @@ const handleProcessLinks = async (message: ProcessLinksMessage) => {
 
   // If there are links, check the cache for links
   const cachedGames: GameData[] = await Cache.get();
-  console.log(cachedGames);
 
   // If there are links, diff the list received and the cache
   const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
