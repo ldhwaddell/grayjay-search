@@ -21,32 +21,32 @@ const SearchBar = ({
 }: Props) => {
   const [text, setText] = useState<string>(queryText);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const invalidNames: Set<string> = new Set(["- Not Set -", "N/A N/A"]);
 
   useEffect(() => {
     setText(queryText);
   }, [queryText]);
 
   const onChangeHandler = (text: string) => {
-    if (text.length > 0 && games.length) {
+    if (text.length > 0 && games) {
       const regex = new RegExp(text, "gi");
 
-      const matches = games.reduce((acc: Set<string>, game: GameData) => {
-        // Only add matches that aren't "- Not Set -"
-        if (game[type] !== "- Not Set -" && game[type].match(regex)) {
-          acc.add(game[type]);
+      const matches = games.reduce((acc: string[], game: GameData) => {
+        if (!invalidNames.has(game[type]) && game[type].match(regex)) {
+          acc.push(game[type]);
         }
 
         return acc;
-      }, new Set<string>());
+      }, []);
 
       // If no matches, let user know
-      if (!matches.size) {
+      if (!matches.length) {
         setSuggestions(["No Matches"]);
         return;
       }
 
       // Otherwise set suggestions to matches
-      setSuggestions(Array.from(matches));
+      setSuggestions(matches);
     } else {
       // No text; set suggestions to empty array
       setSuggestions([]);
