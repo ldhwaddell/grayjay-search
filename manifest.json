@@ -28,7 +28,8 @@
                 "*://grayjayleagues.com/*all_games=1*"
             ],
             "js": [
-                "js/content.js"
+                "js/content-links.js",
+                "js/content-query.js"
             ]
         }
     ],
