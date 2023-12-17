@@ -1,18 +1,12 @@
-import {
-  ErrorScrapingLinksMessage,
-  GameData,
-  ProcessLinksMessage,
-  Query,
-  QueryChangeMessage,
-} from "./types";
+import { GameData } from "./types";
 
 import { Cache } from "./Cache";
-import { isQueryNull, delay } from "./utils";
+import { delay, scrapeGameDivs } from "./utils";
 
-const scrapeGameDivs = (): HTMLElement[] =>
-  Array.from(document.querySelectorAll(".single-game")) as HTMLElement[];
-
-const scrapeLinks = async (retries = 3, delayMs: number = 1000) => {
+const scrapeLinks = async (
+  retries = 3,
+  delayMs: number = 1000
+): Promise<string[]> => {
   try {
     const gameDivs = scrapeGameDivs();
 
@@ -32,8 +26,7 @@ const scrapeLinks = async (retries = 3, delayMs: number = 1000) => {
 
     if (retries > 1) {
       await delay(delayMs);
-      scrapeLinks(retries - 1, delayMs);
-      return;
+      return scrapeLinks(retries - 1, delayMs);
     }
 
     throw new Error(`Unable to scrape game links after ${retries} retries`);
@@ -43,7 +36,7 @@ const scrapeLinks = async (retries = 3, delayMs: number = 1000) => {
 const getNewGamesToScrape = (
   scrapedLinks: string[],
   cachedGames: GameData[]
-) => {
+): string[] => {
   // Extract id property from game objects
   const cachedIds: Set<number> = new Set(cachedGames.map((game) => game.id));
   const newGamesToScrape = scrapedLinks.filter(
@@ -71,34 +64,36 @@ const getoldGamesToRemove = (
 
 const updateLinks = async () => {
   try {
-    const scrapedLinks = (await scrapeLinks()) as [];
+    const scrapedLinks = await scrapeLinks();
     const cachedGames = await Cache.get("games");
 
     if (!cachedGames) {
-      const message: ProcessLinksMessage = {
+      chrome.runtime.sendMessage({
         type: "PROCESS_LINKS",
         links: scrapedLinks,
-      };
-      chrome.runtime.sendMessage(message);
+      });
       return;
     }
 
     const newGamesToScrape = getNewGamesToScrape(scrapedLinks, cachedGames);
     const oldGamesToRemove = getoldGamesToRemove(scrapedLinks, cachedGames);
 
-    const message: ProcessLinksMessage = {
-      type: "PROCESS_LINKS",
-      links: newGamesToScrape,
-    };
-    chrome.runtime.sendMessage(message);
-    Cache.removeGames(oldGamesToRemove);
+    if (newGamesToScrape.length) {
+      chrome.runtime.sendMessage({
+        type: "PROCESS_LINKS",
+        links: newGamesToScrape,
+      });
+    }
+
+    if (oldGamesToRemove.length) {
+      Cache.removeGames(oldGamesToRemove);
+    }
   } catch (error) {
     // more of a "ERROR_UPDATING_LINKS"
-    console.log(error);
-    const message: ErrorScrapingLinksMessage = {
+    console.error("Error updating links: ", error);
+    chrome.runtime.sendMessage({
       type: "ERROR_SCRAPING_LINKS",
-    };
-    chrome.runtime.sendMessage(message);
+    });
   }
 };
 
