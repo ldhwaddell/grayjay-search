@@ -1,16 +1,7 @@
-import {
-  ErrorScrapingLinksMessage,
-  GameData,
-  ProcessLinksMessage,
-  Query,
-  QueryChangeMessage,
-} from "./types";
+import { GameData, Query, QueryChangeMessage } from "./types";
 
 import { Cache } from "./Cache";
-import { isQueryNull, delay } from "./utils";
-
-const scrapeGameDivs = (): HTMLElement[] =>
-  Array.from(document.querySelectorAll(".single-game")) as HTMLElement[];
+import { isQueryNull, scrapeGameDivs } from "./utils";
 
 const matchCondition = (
   query1: string,
@@ -28,7 +19,7 @@ const matchCondition = (
     : query1 === game1 || query2 === game2;
 };
 
-const matchesQuery = (query: Query, game: GameData) => {
+const matchesQuery = (game: GameData, query: Query) => {
   const { referee, linesman } = query;
 
   const refereeMatch = matchCondition(
@@ -55,7 +46,7 @@ const showMatches = (query: Query, cachedGames: GameData[]): void => {
 
   const matches: Set<number> = cachedGames.reduce(
     (acc: Set<number>, game: GameData) => {
-      if (matchesQuery(query, game)) {
+      if (matchesQuery(game, query)) {
         acc.add(game.id);
       }
       return acc;
@@ -66,23 +57,45 @@ const showMatches = (query: Query, cachedGames: GameData[]): void => {
   if (matches.size === 0) {
     const firstGameDiv = gameDivs[0];
     const clone = firstGameDiv.cloneNode(true) as HTMLElement;
+    clone.id = "no-match-div";
 
     // Find the game-card element within the clone
-    //const gameCard = clone.querySelector(".game-card");
+    const gameCard = clone.querySelector(".game-card") as HTMLElement;
 
-    // Append the modified clone to the DOM, adjust the location as needed
-    // For example, appending to the container of the gameDivs
-    //firstGameDiv.parentNode?.insertBefore(clone, firstGameDiv);
+    gameCard.innerHTML = "";
+    Object.assign(gameCard.style, {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      height: "100%",
+      padding: "25px",
+      fontSize: "24px",
+      fontWeight: "600",
+      boxShadow: "inset 0 0 0 5px rgb(44, 123, 229)",
+    });
+
+    // Create a new div to hold the "No matches found" text
+    const noMatchesDiv = document.createElement("div");
+    noMatchesDiv.textContent = "No Matches Found";
+
+    // Append the new div to the game-card
+    gameCard.appendChild(noMatchesDiv);
+    firstGameDiv.parentNode?.insertBefore(clone, firstGameDiv);
   }
 
   gameDivs.forEach((div) => {
     const anchor = div.querySelector("a[id]") as HTMLAnchorElement;
     const id = Number(anchor.id);
+
     display(query.matches, div, matches.has(id));
   });
 };
 
-const display = (matchType: string, div: HTMLElement, match: boolean): void => {
+const display = (
+  matchType: "Highlight" | "Display",
+  div: HTMLElement,
+  match: boolean
+): void => {
   switch (matchType) {
     case "Highlight":
       div.style.border = match ? "5px solid green" : "0";
@@ -93,10 +106,12 @@ const display = (matchType: string, div: HTMLElement, match: boolean): void => {
   }
 };
 
-const showAllGames = () => {
+const clearMatches = () => {
   const gameDivs = scrapeGameDivs();
 
-  // Clear "no matches found" div here
+  // Clear "no matches found" div
+  const noMatchesDiv = document.getElementById("no-match-div");
+  noMatchesDiv?.remove();
 
   gameDivs.forEach((div) => {
     div.style.display = "block";
@@ -109,12 +124,12 @@ const handleQueryChange = async () => {
 
   // Clear any previous searches if query is null
   if (isQueryNull(query)) {
-    showAllGames();
+    clearMatches();
     return;
   }
 
   const games = await Cache.get("games");
-  showAllGames();
+  clearMatches();
   showMatches(query, games);
 };
 
@@ -125,7 +140,6 @@ chrome.runtime.onMessage.addListener(
     _: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void
   ) => {
-    console.log(message);
     switch (message.type) {
       case "QUERY_CHANGE":
         handleQueryChange();

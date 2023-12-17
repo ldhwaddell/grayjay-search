@@ -97,7 +97,7 @@ const SearchPage = ({ games }: Props) => {
     }));
   };
 
-  const handleMatchChange = (match: string) => {
+  const handleMatchChange = (match: "Highlight" | "Display") => {
     setQuery((prevQuery) => ({
       ...prevQuery,
       matches: match,

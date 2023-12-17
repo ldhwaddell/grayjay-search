@@ -19,8 +19,7 @@
         "activeTab",
         "tabs",
         "scripting",
-        "storage",
-        "webNavigation"
+        "storage"
     ],
     "content_scripts": [
         {
@@ -28,8 +27,8 @@
                 "*://grayjayleagues.com/*all_games=1*"
             ],
             "js": [
-                "js/content-links.js",
-                "js/content-query.js"
+                "js/contentLinks.js",
+                "js/contentQuery.js"
             ]
         }
     ],

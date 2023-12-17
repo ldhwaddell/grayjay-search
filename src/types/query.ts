@@ -13,7 +13,7 @@ export interface LinesmanQuery {
 export interface Query {
   referee: RefereeQuery;
   linesman: LinesmanQuery;
-  matches: string;
+  matches: "Highlight" | "Display";
 }
 
 export const defaultQuery: Query = {
