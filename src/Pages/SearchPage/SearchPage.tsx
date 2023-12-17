@@ -32,9 +32,9 @@ const SearchPage = ({ games }: Props) => {
   useEffect(() => {
     const fetchQuery = async () => {
       try {
-        const queryData: Query = await Cache.getQuery();
+        const queryData: Query = await Cache.get("query");
         // Only update query if one already exists
-        if (Object.keys(queryData).length !== 0) {
+        if (queryData) {
           setQuery(queryData);
         }
       } catch (error) {
@@ -45,13 +45,11 @@ const SearchPage = ({ games }: Props) => {
     fetchQuery();
   }, []);
 
-  // Make sure this does not trigger twice
-  // once when query state is set
-  // another time when query is updated from cache
+  // Fix so doesn't trigger twice
   useDeepCompareEffect(() => {
     const sendMessage = async () => {
       // Update query in cache
-      await Cache.updateQuery(query);
+      await Cache.update("query", query);
       // Then send message
       const tab = await getCurrentTab();
 

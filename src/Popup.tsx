@@ -19,7 +19,7 @@ const Popup = () => {
         const valid: boolean = !!tab.url && isValidUrl(tab.url);
 
         if (valid) {
-          const games: GameData[] = await Cache.get();
+          const games: GameData[] = await Cache.get("games");
           setGames(games);
           setOnValidPage(valid);
         }
