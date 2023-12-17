@@ -1,5 +1,6 @@
 import { parse } from "html-to-ast";
 import { Cache } from "./Cache";
+import { delay } from "./utils";
 
 import {
   ErrorScrapingLinksMessage,
@@ -13,8 +14,6 @@ type Message = ErrorScrapingLinksMessage | ProcessLinksMessage;
 
 // State flag
 let isProcessingLinks = false;
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const isOfficial = (node: MaybeDoc): node is OfficialNode => {
   return (
@@ -52,7 +51,7 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
 
 const fetchRetry = async (
   url: string,
-  retries: number,
+  retries: number = 3,
   delayMs: number = 1000
 ): Promise<string> => {
   try {
@@ -73,7 +72,7 @@ const fetchRetry = async (
 
 const fetchGameData = async (url: string): Promise<GameData | null> => {
   try {
-    const html: string = await fetchRetry(url, 3);
+    const html: string = await fetchRetry(url);
 
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
@@ -103,7 +102,6 @@ const scrapeLinks = async (links: string[]) => {
   }
 
   const chunkSize = 5;
-  const allGameData: GameData[] = [];
 
   for (let i = 0; i < links.length; i += chunkSize) {
     const chunk = links.slice(i, i + chunkSize);
@@ -114,7 +112,9 @@ const scrapeLinks = async (links: string[]) => {
       );
 
       // Add non null data chunks to cache
-      Cache.add(dataChunk.filter((game): game is GameData => game !== null));
+      Cache.addGames(
+        dataChunk.filter((game): game is GameData => game !== null)
+      );
     } catch (error) {
       // Log the error and the chunk that caused it
       console.error("Error with a chunk:", chunk, error);
@@ -122,32 +122,6 @@ const scrapeLinks = async (links: string[]) => {
   }
 
   isProcessingLinks = false;
-
-  return allGameData;
-};
-
-const diffArrays = (
-  newLinks: string[],
-  cached: GameData[]
-): [string[], number[]] => {
-  // Extract IDs from URLs
-  const currentIds: Set<number> = new Set(
-    newLinks.map((game) => Number(game.split("/").pop()))
-  );
-  // Extract id property from game objects
-  const cachedIds: Set<number> = new Set(cached.map((game) => game.id));
-
-  // Return URLs to scrape
-  const newGamesToScrape = newLinks.filter(
-    (link) => !cachedIds.has(Number(link.split("/").pop()))
-  );
-
-  // Return IDs of games to remove
-  const oldGamesToRemove = cached
-    .filter((game) => !currentIds.has(game.id))
-    .map((game) => game.id);
-
-  return [newGamesToScrape, oldGamesToRemove];
 };
 
 const handleProcessLinks = async (message: ProcessLinksMessage) => {
@@ -159,22 +133,9 @@ const handleProcessLinks = async (message: ProcessLinksMessage) => {
     return;
   }
 
-  isProcessingLinks = true;
   const { links } = message;
-
-  // If there are links, check the cache for links
-  const cachedGames: GameData[] = await Cache.get();
-
-  // If there are links, diff the list received and the cache
-  const [newGamesToScrape, oldGamesToRemove] = diffArrays(links, cachedGames);
-
-  try {
-    scrapeLinks(newGamesToScrape);
-    Cache.remove(oldGamesToRemove);
-  } catch (error) {
-    console.error("Error processing links. Please refresh page");
-    return;
-  }
+  isProcessingLinks = true;
+  scrapeLinks(links);
 };
 
 chrome.runtime.onMessage.addListener(
