@@ -27,3 +27,9 @@ export const isQueryNull = (query: Query): boolean => {
   // Return true if all are strictly "", false otherwise
   return areRefereesNull && areLinesmenNull;
 };
+
+export const delay = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+export const scrapeGameDivs = (): HTMLElement[] =>
+  Array.from(document.querySelectorAll(".single-game")) as HTMLElement[];
