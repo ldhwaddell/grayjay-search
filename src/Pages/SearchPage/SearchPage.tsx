@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import Header from "../../Components/Header/Header";
 import RadioButton from "../../Components/RadioButton/RadioButton";
@@ -28,6 +28,7 @@ const SearchPage = ({ games }: Props) => {
   const [query, setQuery] = useState<Query>(
     JSON.parse(JSON.stringify(defaultQuery))
   );
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const fetchQuery = async () => {
@@ -45,8 +46,14 @@ const SearchPage = ({ games }: Props) => {
     fetchQuery();
   }, []);
 
-  // Fix so doesn't trigger twice
   useDeepCompareEffect(() => {
+    // Skip initial render to doesn't trigger twice
+    if (isInitialMount.current) {
+      // Skip the first run of the effect
+      isInitialMount.current = false;
+      return;
+    }
+
     const sendMessage = async () => {
       // Update query in cache
       await Cache.update("query", query);
