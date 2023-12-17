@@ -31,22 +31,22 @@ const SearchBar = ({
     if (text.length > 0 && games) {
       const regex = new RegExp(text, "gi");
 
-      const matches = games.reduce((acc: string[], game: GameData) => {
+      const matches = games.reduce((acc: Set<string>, game: GameData) => {
         if (!invalidNames.has(game[type]) && game[type].match(regex)) {
-          acc.push(game[type]);
+          acc.add(game[type]);
         }
 
         return acc;
-      }, []);
+      }, new Set<string>());
 
       // If no matches, let user know
-      if (!matches.length) {
+      if (!matches.size) {
         setSuggestions(["No Matches"]);
         return;
       }
 
       // Otherwise set suggestions to matches
-      setSuggestions(matches);
+      setSuggestions(Array.from(matches));
     } else {
       // No text; set suggestions to empty array
       setSuggestions([]);
