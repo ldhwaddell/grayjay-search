@@ -97,10 +97,6 @@ const fetchGameData = async (url: string): Promise<GameData | null> => {
 };
 
 const scrapeLinks = async (links: string[]) => {
-  if (!links || !links.length) {
-    return;
-  }
-
   const chunkSize = 5;
 
   for (let i = 0; i < links.length; i += chunkSize) {
