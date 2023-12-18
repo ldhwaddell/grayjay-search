@@ -33,3 +33,5 @@ export const delay = (ms: number) =>
 
 export const scrapeGameDivs = (): HTMLElement[] =>
   Array.from(document.querySelectorAll(".single-game")) as HTMLElement[];
+
+export const clone = (obj: any) => JSON.parse(JSON.stringify(obj));

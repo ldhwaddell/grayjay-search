@@ -7,7 +7,7 @@ import ToggleConditionButton from "../../Components/ToggleConditionButton/Toggle
 import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton";
 
 import { Cache } from "../../Cache";
-import { getCurrentTab } from "../../utils";
+import { clone, getCurrentTab } from "../../utils";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import "./SearchPage.css";
@@ -25,9 +25,7 @@ interface Props {
 }
 
 const SearchPage = ({ games }: Props) => {
-  const [query, setQuery] = useState<Query>(
-    JSON.parse(JSON.stringify(defaultQuery))
-  );
+  const [query, setQuery] = useState<Query>(clone(defaultQuery));
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -70,7 +68,7 @@ const SearchPage = ({ games }: Props) => {
   }, [query]);
 
   const handleQueryReset = () => {
-    setQuery(JSON.parse(JSON.stringify(defaultQuery)));
+    setQuery(clone(defaultQuery));
   };
 
   const handleOfficialChange = (official: Official, name: string) => {
