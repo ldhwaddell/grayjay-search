@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 
 import "./SearchBar.css";
 
-import { GameData, Official } from "../../types";
+import { GameDataRecord, Official } from "../../types";
 
 interface Props {
-  games: GameData[];
+  games: GameDataRecord;
   queryText: string;
   type: Official;
   placeHolder: string;
@@ -31,13 +31,13 @@ const SearchBar = ({
     if (text.length > 0 && games) {
       const regex = new RegExp(text, "gi");
 
-      const matches = games.reduce((acc: Set<string>, game: GameData) => {
-        if (!invalidNames.has(game[type]) && game[type].match(regex)) {
-          acc.add(game[type]);
-        }
+      const matches = new Set<string>();
 
-        return acc;
-      }, new Set<string>());
+      for (const game of Object.values(games)) {
+        if (!invalidNames.has(game[type]) && game[type].match(regex)) {
+          matches.add(game[type]);
+        }
+      }
 
       // If no matches, let user know
       if (!matches.size) {
