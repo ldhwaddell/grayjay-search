@@ -1,4 +1,4 @@
-import { GameData } from "./types";
+import { GameData, GameDataRecord } from "./types";
 
 const GAME_CACHE_KEY: string = "games";
 
@@ -28,23 +28,23 @@ export class Cache {
     });
   };
 
-  static addGames = async (gameData: GameData[]): Promise<void> => {
-    const currentGames: GameData[] = (await this.get(GAME_CACHE_KEY)) || [];
-    const updatedGames: GameData[] = [...currentGames, ...gameData];
+  static addGames = async (gameData: GameDataRecord): Promise<void> => {
+    const currentGames: GameData[] = (await this.get(GAME_CACHE_KEY)) || {};
 
-    await this.update(GAME_CACHE_KEY, updatedGames);
+    await this.update(GAME_CACHE_KEY, { ...currentGames, ...gameData });
   };
 
   // Make sure it handles case of adding/removing at same time
-  static removeGames = async (gamesToRemove: number[]): Promise<void> => {
+  static removeGames = async (gamesToRemove: string[]): Promise<void> => {
     // Fetch the current games from the cache
-    const currentGames: GameData[] = await this.get(GAME_CACHE_KEY);
+    const currentGames: GameDataRecord = await this.get(GAME_CACHE_KEY);
 
-    // Filter out the games that need to be removed
-    const updatedGames: GameData[] = currentGames.filter(
-      (game) => !gamesToRemove.includes(game.id)
-    );
+    // Remove the specified games
+    gamesToRemove.forEach((id) => {
+      delete currentGames[id];
+    });
 
-    await this.update(GAME_CACHE_KEY, updatedGames);
+    // Update the cache with the modified games object
+    await this.update(GAME_CACHE_KEY, currentGames);
   };
 }

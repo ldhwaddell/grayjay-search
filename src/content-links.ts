@@ -1,5 +1,3 @@
-import { GameData } from "./types";
-
 import { Cache } from "./Cache";
 import { delay, scrapeGameDivs } from "./utils";
 
@@ -33,35 +31,6 @@ const scrapeLinks = async (
   }
 };
 
-const getNewGamesToScrape = (
-  scrapedLinks: string[],
-  cachedGames: GameData[]
-): string[] => {
-  // Extract id property from game objects
-  const cachedIds: Set<number> = new Set(cachedGames.map((game) => game.id));
-  const newGamesToScrape = scrapedLinks.filter(
-    (link) => !cachedIds.has(Number(link.split("/").pop()))
-  );
-
-  return newGamesToScrape;
-};
-
-const getoldGamesToRemove = (
-  scrapedLinks: string[],
-  cachedGames: GameData[]
-): number[] => {
-  // Extract IDs from URLs
-  const currentIds: Set<number> = new Set(
-    scrapedLinks.map((game) => Number(game.split("/").pop()))
-  );
-  // Return IDs of games to remove
-  const oldGamesToRemove = cachedGames
-    .filter((game) => !currentIds.has(game.id))
-    .map((game) => game.id);
-
-  return oldGamesToRemove;
-};
-
 const updateLinks = async () => {
   try {
     const scrapedLinks = await scrapeLinks();
@@ -75,8 +44,10 @@ const updateLinks = async () => {
       return;
     }
 
-    const newGamesToScrape = getNewGamesToScrape(scrapedLinks, cachedGames);
-    const oldGamesToRemove = getoldGamesToRemove(scrapedLinks, cachedGames);
+    // Get new games to scrape
+    const newGamesToScrape = scrapedLinks.filter(
+      (link) => !((link.split("/").pop() as string) in cachedGames)
+    );
 
     if (newGamesToScrape.length) {
       chrome.runtime.sendMessage({
@@ -84,6 +55,15 @@ const updateLinks = async () => {
         links: newGamesToScrape,
       });
     }
+
+    // Get old games to remove
+    const currentIds: Set<string> = new Set(
+      scrapedLinks.map((game) => game.split("/").pop() as string)
+    );
+
+    const oldGamesToRemove = Object.keys(cachedGames).filter(
+      (id) => !currentIds.has(id)
+    );
 
     if (oldGamesToRemove.length) {
       Cache.removeGames(oldGamesToRemove);
