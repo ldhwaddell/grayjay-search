@@ -5,7 +5,7 @@ import { delay } from "./utils";
 import {
   ErrorScrapingLinksMessage,
   ProcessLinksMessage,
-  GameData,
+  GameDataRecord,
   MaybeDoc,
   OfficialNode,
 } from "./types";
@@ -70,23 +70,24 @@ const fetchRetry = async (
   }
 };
 
-const fetchGameData = async (url: string): Promise<GameData | null> => {
+const fetchGameData = async (url: string): Promise<GameDataRecord | null> => {
   try {
     const html: string = await fetchRetry(url);
 
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
-    const id: number = Number(url.split("/").pop());
+    const id: string = url.split("/").pop() as string;
 
-    const data: GameData = {
-      url,
-      id,
-      referee1: officials[5],
-      referee2: officials[4],
-      linesman1: officials[3],
-      linesman2: officials[2],
-      timeKeeper1: officials[1],
-      timeKeeper2: officials[0],
+    const data: GameDataRecord = {
+      [id]: {
+        url,
+        referee1: officials[5],
+        referee2: officials[4],
+        linesman1: officials[3],
+        linesman2: officials[2],
+        timeKeeper1: officials[1],
+        timeKeeper2: officials[0],
+      },
     };
 
     return data;
@@ -107,10 +108,17 @@ const scrapeLinks = async (links: string[]) => {
         chunk.map((link) => fetchGameData(link))
       );
 
-      // Add non null data chunks to cache
-      Cache.addGames(
-        dataChunk.filter((game): game is GameData => game !== null)
-      );
+      const combinedDataChunk: GameDataRecord =
+        dataChunk.reduce<GameDataRecord>((acc, obj) => {
+          if (obj) {
+            const key = Object.keys(obj)[0]; // Get the key of the current object
+            acc[key] = obj[key]; // Assign the value to the key in the accumulator
+          }
+          return acc;
+        }, {});
+
+      // Add combined, non null data chunks to cache
+      Cache.addGames(combinedDataChunk);
     } catch (error) {
       // Log the error and the chunk that caused it
       console.error("Error with a chunk:", chunk, error);
