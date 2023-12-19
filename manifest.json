@@ -27,7 +27,8 @@
             ],
             "js": [
                 "js/contentLinks.js",
-                "js/contentQuery.js"
+                "js/contentQuery.js",
+                "js/contentInjectCSS.js"
             ]
         }
     ],

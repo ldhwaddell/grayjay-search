@@ -7,6 +7,7 @@ module.exports = {
     index: "./src/index.tsx", // The popup script
     contentLinks: "./src/content-links.ts", // the script that interacts with the web page to update the games in cache
     contentQuery: "./src/content-query.ts", // the script that interacts with the web page to show query results
+    contentInjectCSS: "./src/content-inject-css.ts", // the script that interacts with the web page to load CSS styles
     worker: "./src/service-worker.ts", // The Script that runs when a user visits grayjay all games page
     cache: "./src/Cache.ts",
   },
