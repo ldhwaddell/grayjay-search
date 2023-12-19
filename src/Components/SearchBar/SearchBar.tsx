@@ -86,7 +86,7 @@ const SearchBar = ({
         }}
       />
       <img
-        src="./assets/x.png"
+        src="/assets/x.png"
         alt="X icon"
         className="search-clear-icon"
         onClick={() => resetQuery()}

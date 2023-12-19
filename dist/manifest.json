@@ -9,11 +9,11 @@
         "default_title": "GrayJay Search"
     },
     "icons": {
-        "16": "js/icons/icon16.png",
-        "24": "js/icons/icon24.png",
-        "32": "js/icons/icon32.png",
-        "48": "js/icons/icon48.png",
-        "128": "js/icons/icon128.png"
+        "16": "icons/icon16.png",
+        "24": "icons/icon24.png",
+        "32": "icons/icon32.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
     },
     "permissions": [
         "activeTab",
@@ -25,10 +25,10 @@
             "matches": [
                 "*://grayjayleagues.com/*all_games=1*"
             ],
+            "css": ["assets/matches-tooltip.css"],
             "js": [
                 "js/contentLinks.js",
-                "js/contentQuery.js",
-                "js/contentInjectCSS.js"
+                "js/contentQuery.js"
             ]
         }
     ],

@@ -25,7 +25,7 @@ const RadioButton = ({ text, tooltipText, checked, onChange }: Props) => {
       <div className="tooltip">
         <img
           className="img"
-          src="./assets/question-mark.png"
+          src="/assets/question-mark.png"
           alt="A question mark"
         />
         <span className="tooltiptext">{tooltipText}</span>
