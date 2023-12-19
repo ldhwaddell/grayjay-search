@@ -13,7 +13,7 @@ import useDeepCompareEffect from "use-deep-compare-effect";
 import "./SearchPage.css";
 
 import {
-  GameData,
+  GameDataRecord,
   Query,
   defaultQuery,
   Official,
@@ -21,7 +21,7 @@ import {
 } from "../../types";
 
 interface Props {
-  games: GameData[];
+  games: GameDataRecord;
 }
 
 const SearchPage = ({ games }: Props) => {
