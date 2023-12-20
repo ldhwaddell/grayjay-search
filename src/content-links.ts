@@ -1,39 +1,25 @@
 import { Cache } from "./Cache";
-import { delay, scrapeGameDivs } from "./utils";
+import { scrapeGameDivs, retry } from "./utils";
 
-const scrapeLinks = async (
-  retries = 3,
-  delayMs: number = 1000
-): Promise<string[]> => {
-  try {
-    const gameDivs = scrapeGameDivs();
+const scrapeLinks = async (): Promise<string[]> => {
+  const gameDivs = scrapeGameDivs();
 
-    const links = gameDivs.flatMap((div) =>
-      Array.from(div.querySelectorAll("a[href]")).map(
-        (link) => (link as HTMLAnchorElement).href
-      )
-    );
+  const links = gameDivs.flatMap((div) =>
+    Array.from(div.querySelectorAll("a[href]")).map(
+      (link) => (link as HTMLAnchorElement).href
+    )
+  );
 
-    if (!links || !links.length) {
-      throw new Error("Empty list of links received");
-    }
-
+  if (links && links.length) {
     return links;
-  } catch (error) {
-    console.error(`Error scraping game links: ${error}`);
-
-    if (retries > 1) {
-      await delay(delayMs);
-      return scrapeLinks(retries - 1, delayMs);
-    }
-
-    throw new Error(`Unable to scrape game links after ${retries} retries`);
   }
+
+  throw new Error("Empty list of links received");
 };
 
 const updateLinks = async () => {
   try {
-    const scrapedLinks = await scrapeLinks();
+    const scrapedLinks = await retry(scrapeLinks);
     const cachedGames = await Cache.get("games");
 
     if (!cachedGames) {
