@@ -1,6 +1,6 @@
 import { parse } from "html-to-ast";
 import { Cache } from "./Cache";
-import { delay } from "./utils";
+import { retry } from "./utils";
 
 import {
   ErrorScrapingLinksMessage,
@@ -49,30 +49,17 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
   return officials;
 };
 
-const fetchRetry = async (
-  url: string,
-  retries: number = 3,
-  delayMs: number = 1000
-): Promise<string> => {
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-      return await response.text();
-    }
-    throw new Error(`Invalid response code: ${response.status} for ${url}`);
-  } catch (error) {
-    console.error(`Error fetching ${url}: ${error}`);
-    if (retries > 1) {
-      await delay(delayMs);
-      return fetchRetry(url, retries - 1, delayMs);
-    }
-    throw new Error(`Unable to scrape: ${url} after ${retries} retries`);
-  }
-};
-
 const fetchGameData = async (url: string): Promise<GameDataRecord | null> => {
   try {
-    const html: string = await fetchRetry(url);
+    const html: string = await retry(async () => {
+      const response = await fetch(url);
+
+      if (response.ok) {
+        return await response.text();
+      }
+
+      throw new Error(`Invalid response code: ${response.status} for ${url}`);
+    });
 
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
@@ -111,7 +98,7 @@ const scrapeLinks = async (links: string[]) => {
       const combinedDataChunk: GameDataRecord =
         dataChunk.reduce<GameDataRecord>((acc, obj) => {
           if (obj) {
-            const key = Object.keys(obj)[0]; // Get the key of the current object
+            const [key] = Object.keys(obj); // Get the key of the current object
             acc[key] = obj[key]; // Assign the value to the key in the accumulator
           }
           return acc;
@@ -143,7 +130,7 @@ const handleProcessLinks = async (message: ProcessLinksMessage) => {
 };
 
 chrome.runtime.onMessage.addListener(
-  (
+  async (
     message: Message,
     _: chrome.runtime.MessageSender,
     sendResponse: (response: any) => void

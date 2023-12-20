@@ -35,3 +35,21 @@ export const scrapeGameDivs = (): HTMLElement[] =>
   Array.from(document.querySelectorAll(".single-game")) as HTMLElement[];
 
 export const clone = (obj: any) => JSON.parse(JSON.stringify(obj));
+
+export const retry = async <T, Args extends any[]>(
+  func: (...args: Args) => Promise<T>,
+  retries: number = 3,
+  delayMs: number = 1000,
+  ...args: Args
+): Promise<T> => {
+  try {
+    return await func(...args);
+  } catch (error) {
+    console.error("Error in function: ", error);
+    if (retries > 1) {
+      await delay(delayMs);
+      return retry(func, retries - 1, delayMs, ...args);
+    }
+    throw new Error(`Unable to call ${func.name}`);
+  }
+};
