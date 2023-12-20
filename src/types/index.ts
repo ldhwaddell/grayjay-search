@@ -4,7 +4,6 @@ export * from "./query";
 // Generic Types used across multiple files
 export type GameData = {
   url: string;
-  id: number;
   referee1: string;
   referee2: string;
   linesman1: string;
@@ -12,6 +11,9 @@ export type GameData = {
   timeKeeper1: string;
   timeKeeper2: string;
 };
+
+// This represents a record of game data objects, keyed by string
+export type GameDataRecord = Record<string, GameData>;
 
 export interface MaybeDoc {
   type?: string;

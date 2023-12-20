@@ -1,4 +1,4 @@
-import { GameData, GameDataRecord } from "./types";
+import { GameDataRecord } from "./types";
 
 const GAME_CACHE_KEY: string = "games";
 
@@ -29,7 +29,7 @@ export class Cache {
   };
 
   static addGames = async (gameData: GameDataRecord): Promise<void> => {
-    const currentGames: GameData[] = (await this.get(GAME_CACHE_KEY)) || {};
+    const currentGames: GameDataRecord = (await this.get(GAME_CACHE_KEY)) || {};
 
     await this.update(GAME_CACHE_KEY, { ...currentGames, ...gameData });
   };
