@@ -1,6 +1,6 @@
 import { parse } from "html-to-ast";
 import { Cache } from "./Cache";
-import { retry } from "./utils";
+import { retry, getCurrentTab } from "./utils";
 
 import {
   ErrorScrapingLinksMessage,
@@ -8,6 +8,7 @@ import {
   GameDataRecord,
   MaybeDoc,
   OfficialNode,
+  InjectTooltipMessage,
 } from "./types";
 
 type Message = ErrorScrapingLinksMessage | ProcessLinksMessage;
@@ -84,7 +85,7 @@ const fetchGameData = async (url: string): Promise<GameDataRecord | null> => {
   }
 };
 
-const scrapeLinks = async (links: string[]) => {
+const scrapeLinks = async (activeTabId: number, links: string[]) => {
   const chunkSize = 5;
 
   for (let i = 0; i < links.length; i += chunkSize) {
@@ -95,14 +96,28 @@ const scrapeLinks = async (links: string[]) => {
         chunk.map((link) => fetchGameData(link))
       );
 
-      const combinedDataChunk: GameDataRecord =
-        dataChunk.reduce<GameDataRecord>((acc, obj) => {
-          if (obj) {
-            const [key] = Object.keys(obj); // Get the key of the current object
-            acc[key] = obj[key]; // Assign the value to the key in the accumulator
+      const combinedDataChunk: GameDataRecord = {};
+
+      for (const game of dataChunk) {
+        if (game) {
+          // Construct the message
+          const message: InjectTooltipMessage = {
+            type: "INJECT_TOOLTIP",
+            game,
+          };
+
+          // Send message to the tab
+          try {
+            chrome.tabs.sendMessage(activeTabId, message);
+          } catch (error) {
+            console.error("Error sending message to tab:", error);
           }
-          return acc;
-        }, {});
+
+          // Combine the data
+          const [key] = Object.keys(game);
+          combinedDataChunk[key] = game[key];
+        }
+      }
 
       // Add combined, non null data chunks to cache
       Cache.addGames(combinedDataChunk);
@@ -123,10 +138,16 @@ const handleProcessLinks = async (message: ProcessLinksMessage) => {
     );
     return;
   }
+  // Get active tab to send messages to
+  const tab = await getCurrentTab();
+  if (!tab || !tab.id) {
+    console.error("No active tab found.");
+    return;
+  }
 
   const { links } = message;
   isProcessingLinks = true;
-  scrapeLinks(links);
+  scrapeLinks(tab.id, links);
 };
 
 chrome.runtime.onMessage.addListener(
