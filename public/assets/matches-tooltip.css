@@ -16,7 +16,6 @@
   border-radius: 4px;
   position: absolute;
   z-index: 100;
-  bottom: 42px;
   left: 50%;
   background-color: #fff;
   transform: translateX(-50%);
