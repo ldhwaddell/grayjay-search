@@ -1,4 +1,4 @@
-import { Query } from "./types";
+import { Query, MeasureTextWidthFunction } from "./types";
 
 // Various helper functions
 const regex: RegExp =
@@ -52,4 +52,29 @@ export const retry = async <T, Args extends any[]>(
     }
     throw new Error(`Unable to call ${func.name}`);
   }
+};
+
+export const getDivById = (gameId: string) => {
+  // Find the anchor tag with the specified ID
+  const anchor = document.getElementById(gameId);
+
+  // If the anchor exists and its parent is a div, return the parent div
+  if (anchor && anchor.parentElement?.tagName === "DIV") {
+    return anchor.parentElement;
+  }
+
+  // Return null if no matching div is found
+  return null;
+};
+
+export const measureTextWidth: MeasureTextWidthFunction = (
+  text: string,
+  font: string
+): number => {
+  if (!measureTextWidth.canvas) {
+    measureTextWidth.canvas = document.createElement("canvas");
+  }
+  const context = measureTextWidth.canvas.getContext("2d")!;
+  context.font = font;
+  return context.measureText(text).width;
 };

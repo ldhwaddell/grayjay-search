@@ -7,7 +7,12 @@ import {
 } from "./types";
 
 import { Cache } from "./Cache";
-import { isQueryNull, scrapeGameDivs } from "./utils";
+import {
+  isQueryNull,
+  scrapeGameDivs,
+  measureTextWidth,
+  getDivById,
+} from "./utils";
 
 const toggleNoMatchesDiv = (gameDivs: HTMLElement[], show: boolean) => {
   // Get the existing no-match-div or create a new one if not present
@@ -30,37 +35,22 @@ const toggleNoMatchesDiv = (gameDivs: HTMLElement[], show: boolean) => {
   }
 };
 
-const buildTooltip = (game: GameData, bottomOffset: string): HTMLDivElement => {
-  const tooltip = document.createElement("div");
-  tooltip.classList.add("matches-tooltip-container");
-  tooltip.style.bottom = parseInt(bottomOffset, 10) + 5 + "px";
+const generateLeftOffset = (
+  text: string,
+  logoWidth: number,
+  colWidth: number,
+  fontStyle: string
+) => {
+  const textWidth = measureTextWidth(text, fontStyle);
+  // Assuming colPadding and rowPadding are constants, they could be defined outside this function
+  const colPadding = 15;
+  const rowPadding = 4;
+  const logoMargin = 5;
 
-  tooltip.innerHTML = ` 
-    <header class="matches-tooltip-header-container">
-      <h1>Officials</h1>
-    </header>
-    <div class="official-inputs">
-      <label>Referee #1: <input type="text" value="${game.referee1}" readonly /></label>
-      <label>Referee #2: <input type="text" value="${game.referee2}" readonly /></label>
-      <label>Linesman #1: <input type="text" value="${game.linesman1}" readonly /></label>
-      <label>Linesman #2: <input type="text" value="${game.linesman2}" readonly /></label>
-    </div>
-  `;
-
-  return tooltip;
-};
-
-const getDivById = (gameId: string) => {
-  // Find the anchor tag with the specified ID
-  const anchor = document.getElementById(gameId);
-
-  // If the anchor exists and its parent is a div, return the parent div
-  if (anchor && anchor.parentElement?.tagName === "DIV") {
-    return anchor.parentElement;
-  }
-
-  // Return null if no matching div is found
-  return null;
+  return (
+    colWidth -
+    (textWidth + colPadding + rowPadding + logoMargin + logoWidth / 2)
+  );
 };
 
 const injectTooltip = (div: HTMLElement, game: GameData) => {
@@ -68,26 +58,58 @@ const injectTooltip = (div: HTMLElement, game: GameData) => {
   const headerRow = gameCard?.querySelector(".col-12 .row");
   const colRight = headerRow?.querySelector(".col-6.text-right");
 
-  if (gameCard && headerRow && colRight) {
-    const bottomOffset = window.getComputedStyle(headerRow).height;
-    const textStyle = window.getComputedStyle(colRight);
-
-    const logo = document.createElement("img");
-    logo.classList.add("injected-logo", "matches-tooltip-trigger");
-    logo.src = "/framework/assets/admin/img/hockey/icon_color/referee-2.png";
-    logo.alt = "Referee Logo";
-    logo.style.position = "relative";
-    logo.style.height = textStyle.lineHeight;
-    logo.style.width = "auto";
-    logo.style.marginRight = "5px";
-
-    colRight.prepend(logo);
-
-    const tooltip = buildTooltip(game, bottomOffset);
-    logo.after(tooltip);
-  } else {
-    throw new Error("Unable to locate required HTML element to inject tooltip");
+  if (!gameCard) {
+    throw new Error("Game card element not found.");
   }
+  if (!headerRow) {
+    throw new Error("Header row within game card not found.");
+  }
+  if (!colRight) {
+    throw new Error("Column right within header row not found.");
+  }
+
+  const fontStyle = getComputedStyle(document.body).font;
+  const text = (colRight.textContent as string).trim();
+  const logoWidth = parseFloat(getComputedStyle(colRight).lineHeight);
+
+  const leftOffset = generateLeftOffset(
+    text,
+    logoWidth,
+    colRight.clientWidth,
+    fontStyle
+  );
+
+  // Create and insert the logo
+  const logo = new Image(logoWidth, logoWidth);
+  logo.classList.add("injected-logo", "matches-tooltip-trigger");
+  logo.src = "/framework/assets/admin/img/hockey/icon_color/referee-2.png";
+  logo.alt = "Referee Logo";
+  logo.style.position = "relative";
+  logo.style.marginRight = "5px";
+
+  colRight.prepend(logo);
+
+  // Wait for logo to load before adding tooltip
+  logo.onload = () => {
+    const bottomOffset = window.getComputedStyle(headerRow).height;
+    const tooltip = document.createElement("div");
+    tooltip.classList.add("matches-tooltip-container");
+    tooltip.style.bottom = parseInt(bottomOffset, 10) + 5 + "px";
+    tooltip.style.left = leftOffset + "px";
+
+    tooltip.innerHTML = ` 
+      <header class="matches-tooltip-header-container">
+        <h1>Officials</h1>
+      </header>
+      <div class="official-inputs">
+        <label>Referee #1: <input id="referee1" type="text" value="${game.referee1}" readonly /></label>
+        <label>Referee #2: <input id="referee2" type="text" value="${game.referee2}" readonly /></label>
+        <label>Linesman #1: <input id="linesman1" type="text" value="${game.linesman1}" readonly /></label>
+        <label>Linesman #2: <input id="linesman2" type="text" value="${game.linesman2}" readonly /></label>
+      </div>
+    `;
+    logo.after(tooltip);
+  };
 };
 
 const injectCachedTooltips = async () => {
@@ -135,12 +157,16 @@ const handleInjectTooltip = (message: InjectTooltipMessage) => {
   const [gameId] = Object.keys(game);
   const gameDiv = getDivById(gameId);
 
-  if (gameDiv) {
-    injectTooltip(gameDiv, game[gameId]);
+  if (!gameDiv) {
+    console.warn("Unable to find gameDiv with id: ", gameId);
     return;
   }
 
-  console.warn("Unable to find gameDiv with id: ", gameId);
+  try {
+    injectTooltip(gameDiv, game[gameId]);
+  } catch (error) {
+    console.error("Unable to inject tooltip for game ID: ", gameId, error);
+  }
 };
 
 // Handle when popup sends message asking to update query results
@@ -165,83 +191,12 @@ window.addEventListener("load", () => injectCachedTooltips());
 
 export {};
 
-// const buildTooltip = (
-//   game: GameData,
-//   refereeMatchedFields: { query1: boolean; query2: boolean },
-//   linesmanMatchedFields: { query1: boolean; query2: boolean }
-// ): HTMLDivElement => {
-//   const tooltip = document.createElement("div");
-//   tooltip.classList.add("matches-tooltip-container");
-
-//   tooltip.innerHTML = `
-//     <header class="matches-tooltip-header-container">
-//       <h1>Officials</h1>
-//     </header>
-//     <div class="official-inputs">
-//       <label>Referee #1: <input class="${
-//         refereeMatchedFields.query1 ? "matches-official" : ""
-//       }" type="text" value="${game.referee1}" readonly /></label>
-//       <label>Referee #2: <input class="${
-//         refereeMatchedFields.query2 ? "matches-official" : ""
-//       }" type="text" value="${game.referee2}" readonly /></label>
-//       <label>Linesman #1: <input class="${
-//         linesmanMatchedFields.query1 ? "matches-official" : ""
-//       }" type="text" value="${game.linesman1}" readonly /></label>
-//       <label>Linesman #2: <input class="${
-//         linesmanMatchedFields.query2 ? "matches-official" : ""
-//       }" type="text" value="${game.linesman2}" readonly /></label>
-//     </div>
-//   `;
-
-//   return tooltip;
-// };
-
 // const displayMatch = (
 //   matchType: "Highlight" | "Display",
 //   div: HTMLElement,
 //   tooltip: HTMLDivElement,
 //   match: boolean
 // ): void => {
-//   // Query the game card for existing elements
-//   const gameCard = div.querySelector(".game-card") as HTMLElement;
-//   const headerRow = gameCard.querySelector(".col-12 .row") as HTMLElement;
-//   const logoCol = gameCard.querySelector("#logo-column") as HTMLElement;
-//   let existingTooltip = gameCard.querySelector(
-//     ".matches-tooltip-container"
-//   ) as HTMLElement;
-
-//   // Check if the logo column exists
-//   if (!logoCol) {
-//     const logoCol = document.createElement("div");
-//     logoCol.id = "logo-column";
-//     logoCol.classList.add("col-2");
-//     Object.assign(logoCol.style, {
-//       display: "flex",
-//       alignItems: "center",
-//       justifyContent: "center",
-//     });
-
-//     // Create and insert the logo
-//     const logo = document.createElement("img");
-//     logo.classList.add("injected-logo", "matches-tooltip-trigger");
-//     Object.assign(logo, {
-//       src: "/framework/assets/admin/img/hockey/icon_color/referee-2.png",
-//       alt: "Ref Logo",
-//       height: 25,
-//       width: 25,
-//     });
-
-//     // Adjust the width of existing columns
-//     const colLeft = headerRow.children[0] as HTMLElement;
-//     const colRight = headerRow.children[1] as HTMLElement;
-//     colLeft.classList.replace("col-6", "col-5");
-//     colRight.classList.replace("col-6", "col-5");
-
-//     // Append the logo and tooltip to the new column
-//     logoCol.appendChild(logo);
-//     logoCol.appendChild(tooltip);
-//     headerRow.insertBefore(logoCol, colRight);
-//   }
 
 //   if (existingTooltip) {
 //     existingTooltip.replaceWith(tooltip);

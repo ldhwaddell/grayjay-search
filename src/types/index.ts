@@ -35,3 +35,8 @@ export interface OfficialNode extends MaybeDoc {
 }
 
 export type Official = "referee1" | "referee2" | "linesman1" | "linesman2";
+
+export interface MeasureTextWidthFunction {
+  (text: string, font: string): number;
+  canvas?: HTMLCanvasElement;
+}
