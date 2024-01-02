@@ -64,7 +64,16 @@ const fetchGameData = async (url: string): Promise<GameDataRecord | null> => {
 
     const ast: MaybeDoc[] = parse(html);
     const officials: string[] = extractOfficials(ast);
-    const id: string = url.split("/").pop() as string;
+
+    if (!officials || !officials.length) {
+      throw new Error(`Unable to extract any officials from url: ${url}`);
+    }
+
+    const id = url.split("/").pop();
+
+    if (!id) {
+      throw new Error(`Unable to extract an id from url: ${url}`);
+    }
 
     const data: GameDataRecord = {
       [id]: {
@@ -99,24 +108,26 @@ const scrapeLinks = async (activeTabId: number, links: string[]) => {
       const combinedDataChunk: GameDataRecord = {};
 
       for (const game of dataChunk) {
-        if (game) {
-          // Construct the message
-          const message: InjectTooltipMessage = {
-            type: "INJECT_TOOLTIP",
-            game,
-          };
-
-          // Send message to the tab
-          try {
-            chrome.tabs.sendMessage(activeTabId, message);
-          } catch (error) {
-            console.error("Error sending message to tab:", error);
-          }
-
-          // Combine the data
-          const [key] = Object.keys(game);
-          combinedDataChunk[key] = game[key];
+        if (!game) {
+          continue;
         }
+
+        // Construct the message
+        const message: InjectTooltipMessage = {
+          type: "INJECT_TOOLTIP",
+          game,
+        };
+
+        // Send message to the tab
+        try {
+          chrome.tabs.sendMessage(activeTabId, message);
+        } catch (error) {
+          console.error("Error sending message to tab:", error);
+        }
+
+        // Combine the data
+        const [key] = Object.keys(game);
+        combinedDataChunk[key] = game[key];
       }
 
       // Add combined, non null data chunks to cache
@@ -164,7 +175,7 @@ chrome.runtime.onMessage.addListener(
       case "ERROR_SCRAPING_LINKS":
         console.error("Unable to scrape game links. Please refresh page");
         // Add logic to make sure popup reflects this, maybe set a flag in memory
-        return;
+        break;
     }
   }
 );
