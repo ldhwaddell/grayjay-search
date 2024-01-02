@@ -52,7 +52,7 @@ const extractOfficials = (ast: MaybeDoc[]): string[] => {
 
 const fetchGameData = async (url: string): Promise<GameDataRecord | null> => {
   try {
-    const html: string = await retry(async () => {
+    const html: string = await retry(async (): Promise<string> => {
       const response = await fetch(url);
 
       if (response.ok) {
