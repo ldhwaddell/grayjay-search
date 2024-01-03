@@ -58,10 +58,13 @@ const SearchPage = ({ games }: Props) => {
       // Then send message
       const tab = await getCurrentTab();
 
-      if (tab.id) {
-        const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
-        chrome.tabs.sendMessage(tab.id, message);
+      if (!tab.id) {
+        console.warn("Unable to access tab ID to visualize query change");
+        return;
       }
+      
+      const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
+      chrome.tabs.sendMessage(tab.id, message);
     };
 
     sendMessage();
