@@ -15,7 +15,7 @@ export const getCurrentTab = async (): Promise<chrome.tabs.Tab> => {
   return tab;
 };
 
-export const isQueryNull = (query: Query): boolean => {
+export const isQueryEmpty = (query: Query): boolean => {
   // Strictly check if referee1 and referee2 are ""
   const areRefereesNull =
     query.referee.referee1 === "" && query.referee.referee2 === "";
