@@ -6,7 +6,7 @@ import {
   InjectTooltipMessage,
 } from "./types";
 
-import { Cache } from "./Cache";
+import { Cache } from "./cache";
 import {
   isQueryEmpty,
   scrapeGameDivs,

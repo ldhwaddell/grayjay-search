@@ -8,7 +8,7 @@ module.exports = {
     contentLinks: "./src/content-links.ts", // the script that interacts with the web page to update the games in cache
     contentQuery: "./src/content-query.ts", // the script that interacts with the web page to show query results
     worker: "./src/service-worker.ts", // The Script that runs when a user visits grayjay all games page
-    cache: "./src/Cache.ts",
+    cache: "./src/cache.ts",
   },
   mode: "production",
   module: {

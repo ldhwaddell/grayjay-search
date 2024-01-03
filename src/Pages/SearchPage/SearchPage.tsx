@@ -6,7 +6,7 @@ import SearchBar from "../../Components/SearchBar/SearchBar";
 import ToggleConditionButton from "../../Components/ToggleConditionButton/ToggleConditionButton";
 import ResetQueryButton from "../../Components/ResetQueryButton/ResetQueryButton";
 
-import { Cache } from "../../Cache";
+import { Cache } from "../../cache";
 import { clone, getCurrentTab } from "../../utils";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
@@ -62,7 +62,7 @@ const SearchPage = ({ games }: Props) => {
         console.warn("Unable to access tab ID to visualize query change");
         return;
       }
-      
+
       const message: QueryChangeMessage = { type: "QUERY_CHANGE" };
       chrome.tabs.sendMessage(tab.id, message);
     };

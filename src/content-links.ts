@@ -1,4 +1,4 @@
-import { Cache } from "./Cache";
+import { Cache } from "./cache";
 import { scrapeGameDivs, retry } from "./utils";
 
 const scrapeLinks = async (): Promise<string[]> => {

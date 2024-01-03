@@ -1,5 +1,5 @@
 import { parse } from "html-to-ast";
-import { Cache } from "./Cache";
+import { Cache } from "./cache";
 import { retry, getCurrentTab } from "./utils";
 
 import {

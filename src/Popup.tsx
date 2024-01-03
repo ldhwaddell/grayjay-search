@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import InvalidPage from "./Pages/InvalidPage/InvalidPage";
 import SearchPage from "./Pages/SearchPage/SearchPage";
 
-import { Cache } from "./Cache";
+import { Cache } from "./cache";
 import { isValidUrl, getCurrentTab } from "./utils";
 
 import { GameDataRecord } from "./types";
